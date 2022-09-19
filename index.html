@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="./css/style.css" media="screen"/>
+        <script type="text/javascript" src="./scripts/main.js"></script>
+        <title>
+            Knowledge Graph Animation &mdash; Mock up
+        </title>
+    </head>
+    <body>
+        <div class="body-container">
+            <div class="file-upload-container">
+                <div class="file-upload-item">
+                    <form class="form-class">
+                        <label name="graph-filename">Graph SVG File</label>
+                        <input type="file" id="graphFile" name="graph-filename" onchange="updateGraph(event)">
+                        <label name="logs-filename">Prudens Logs File</label>
+                        <input type="file" id="logsFile" name="logs-filename" onchange="updateLogs(event)">
+                    </form>
+                    <div class="next-button" onclick="proceed()">Proceed</div>
+                </div>
+            </div>
+            <div class="graph-container" id="graph-container">
+                
+            </div>
+        </div>
+    </body>
+</html>
