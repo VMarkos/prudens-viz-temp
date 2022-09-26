@@ -2,30 +2,65 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <link rel="stylesheet" type="text/css" href="./css/style.css" media="screen"/>
+        <link rel="stylesheet" type="text/css" href="./css/style.css" media="screen"/><link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css">
+        </link>
+
+        <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js">
+        </script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/theme/monokai.min.css">
         <script type="text/javascript" src="./scripts/main.js"></script>
+        <script type="text/javascript" src="./scripts/simpleMode.js"></script>
+        <script type="text/javascript" src="./scripts/prudensMode.js"></script>
+        <script type="text/javascript" src="./scripts/parsers.js"></script>
+        <script type="text/javascript" src="./scripts/prudens.js"></script>
+        <script type="text/javascript" src="./scripts/prudensUtils.js"></script>
         <title>
             Knowledge Graph Animation &mdash; Mock up
         </title>
     </head>
     <body>
         <div class="body-container">
-            <div class="file-upload-container">
-                <div class="file-upload-item">
-                    <form class="form-class">
-                        <label name="graph-filename">Graph SVG File</label>
-                        <br>
-                        <input type="file" id="graphFile" name="graph-filename" onchange="updateGraph(event)">
-                        <br>
-                        <label name="logs-filename">Prudens Logs File</label>
-                        <br>
-                        <input type="file" id="logsFile" name="logs-filename" onchange="updateLogs(event)">
-                    </form>
-                    <div class="next-button" onclick="proceed()">Proceed</div>
+            <div class="body-grid-container">
+                <div class="codeeditor-container">
+                    <div class="code-label">Policy</div>
+                    <div id="policy-container" class="codemirror-container">
+                        
+                    </div>
+                </div>
+                <div class="codeeditor-container">
+                    <div class="code-label">Context</div>
+                    <div id="context-container" class="codemirror-container">
+                        
+                    </div>
+                </div>
+                <div class="codeeditor-container">
+                    <div class="code-label">Console</div>
+                    <div id="console-container" class="codemirror-container">
+                        
+                    </div>
+                </div>
+                <div class="file-upload-container">
+                    <div class="file-upload-item">
+                        <form class="form-class">
+                            <label name="graph-filename">Graph SVG File</label>
+                            <br>
+                            <input type="file" id="graphFile" name="graph-filename" onchange="updateGraphPlot(event)">
+                            <!-- <br>
+                            <label name="logs-filename">Prudens Logs File</label>
+                            <br>
+                            <input type="file" id="logsFile" name="logs-filename" onchange="updateLogs(event)"> -->
+                        </form>
+                        <div class="next-button" onclick="proceed()">Proceed</div>
+                    </div>
                 </div>
             </div>
-            <div class="graph-container" id="graph-container">
-                
+            <div id="gc" class="whole-graph-container">
+                <div class="code-label">Animated Graph</div>
+                <div class="graph-container" id="graph-container">
+
+                </div>
             </div>
         </div>
     </body>

@@ -1,8 +1,58 @@
 let LOGS = [];
 let currentIndex = 0;
 let done = false;
+let initialized = false;
 
-function updateGraph(event) {
+let policyEditor;
+let contextEditor;
+let consoleEditor;
+
+/* CodeMirror Container */
+
+function initializeEditors() {
+    let policyContainer = document.getElementById("policy-container");
+    let contextContainer = document.getElementById("context-container");
+    let consoleContainer = document.getElementById("console-container");
+
+    policyEditor = CodeMirror(policyContainer, {
+    lineNumbers: true,
+    tabSize: 2,
+    gutter: true,
+    value: '@Knowledge\n',
+    theme: "monokai",
+    mode: "simplemode",
+    });
+
+    policyEditor.setSize(400, 300);
+
+    contextEditor = CodeMirror(contextContainer, {
+    lineNumbers: true,
+    tabSize: 2,
+    gutter: true,
+    theme: "monokai",
+    mode: "simplemode",
+    });
+
+    contextEditor.setSize(400, 300);
+
+    consoleEditor = CodeMirror(consoleContainer, { // TODO Change that to some textarea or so?
+    lineNumbers: true,
+    tabSize: 2,
+    gutter: true,
+    theme: "monokai",
+    readOnly: true,
+    });
+
+    consoleEditor.setSize(400, 300);
+    consoleEditor.setValue("~$ ");
+}
+
+window.addEventListener("load", initializeEditors);
+
+/* Graph animation */
+
+function updateGraphPlot(event) {
+    console.log("update");
     this.readSVGGraph(event.target);
 }
 
@@ -78,6 +128,10 @@ function filterRules(rules) {
 }
 
 function proceed() {
+    if (!initialized) {
+        consoleOutput();
+        initialized = true;
+    }
     if (LOGS.length === 0) {
         alert("Empty LOGS, please verify that you have uploaded a logs file!");
         return;
@@ -87,23 +141,34 @@ function proceed() {
         done = true;
         currentIndex = 0;
         fadeOutGraph();
+        initialized = false;
         return;
     }
+    document.getElementById("gc").scrollIntoView({behavior: "smooth", block: "end"});
+    done = false;
     const currentLogs = LOGS[currentIndex];
     const graphChildren = document.getElementById("graph0").childNodes;
-    let edge, title, endEdgeRE, normalizedFact;
+    let edge, title, endEdgeRE, normalizedFact, unfadedFacts = [];
+    console.log("++++++++++++++++++");
     for (const fact in currentLogs) {
         for (const rule of currentLogs[fact]) {
             edge = rule + "-&gt;" + (fact[0] === "-" ? fact.substring(1) : fact);
-            console.log(fact, rule, edge);
+            // console.log(fact, rule, edge);
             endEdgeRE = RegExp(`\.+\-\&gt;` + rule);
             for (const g of graphChildren) {
                 if (g.nodeName === "g") {
                     title = g.childNodes[1].innerHTML;
                     normalizedFact = (fact[0] === "-") ? fact.substring(1) : fact;
                     if (title === normalizedFact || title === rule || title === edge || endEdgeRE.test(title)) {
+                        console.log("unfade:", title);
+                        unfadedFacts.push(title);
                         if (g.classList.contains("faded")) {
                             g.classList.remove("faded");
+                        }
+                    } else if (!unfadedFacts.includes(title)) {
+                        console.log("fade:", title);
+                        if (!g.classList.contains("faded")) {
+                            g.classList.add("faded");
                         }
                     }
                 }
@@ -112,3 +177,60 @@ function proceed() {
     }
     currentIndex++;
 }
+
+/* Prudens */
+
+function deduce() {
+    const kbObject = kbParser();
+    if (kbObject["type"] === "error") {
+        return "ERROR: " + kbObject["name"] + ":\n" + kbObject["message"];
+    }
+    const warnings = kbObject["warnings"];
+    const contextObject = contextParser();
+    if (contextObject["type"] === "error") {
+        return "ERROR: " + contextObject["name"] + ":\n" + contextObject["message"];
+    }
+    // console.log(kbObject);
+    // console.log(contextObject); // TODO fix some context parsing issue (in propositional cases it includes the semicolon into the name of the prop)
+    const output = forwardChaining(kbObject, contextObject["context"]);
+    // console.log(output);
+    const inferences = output["facts"];
+    const graph = output["graph"];
+    // console.log("Inferences:");
+    // console.log(inferences);
+    const outputString = "";
+    if (warnings.length > 0) {
+        outputString += "Warnings:\n";
+    }
+    for (const warning of warnings) {
+        outputString += warning["name"] + ": " + warning["message"] + "\n";
+    }
+    return {
+        outputObject: output,
+        outputString: outputString + "Context: " + contextToString(contextObject["context"]) + "\nInferences: " + contextToString(inferences) + "\nGraph: " + graphToString(graph),
+    };
+  }
+
+  function kbParser() {
+    const kbAll = policyEditor.getValue();
+    return parseKB(kbAll);
+  }
+  
+  function contextParser() {
+    const context = contextEditor.getValue();
+    const contextList = parseContext(context);
+    if (contextList["type"] === "error") {
+        return contextList;
+    }
+    return contextList;
+  }
+  
+  function consoleOutput() {
+    let newText;
+    const output = deduce();
+    const outputObject = output["outputObject"];
+    LOGS = parseLogs(outputObject);
+    newText = output["outputString"];
+    const previous = consoleEditor.getValue();
+    consoleEditor.setValue(previous + newText + "\n~$");
+  }

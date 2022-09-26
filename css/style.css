@@ -5,22 +5,32 @@ html, body {
 
 body {
     background: whitesmoke;
+    display: flex;
+    justify-content: center;
 }
 
 /* Body */
 
 .body-container {
-    display: grid;
-    grid-template-columns: 1fr 4fr;
-    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    max-width: 1000px;
+    align-items: center;
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.body-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 50px;
+    gap: 20px;
 }
 
 .file-upload-container {
     display: flex;
     flex-direction: column;
     padding: 10px 25px 10px 10px;
-    border-right: 1px solid black;
+    margin-top: 35px;
 }
 
 input {
@@ -53,4 +63,39 @@ input {
 
 .faded {
     opacity: 0.3;
+}
+
+/* CodeMirror */
+
+.codemirror-container {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.CodeMirror {
+    border-radius: 5px;
+    width: 400px;
+}
+
+.codeeditor-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.code-label {
+    padding: 5px;
+    border-bottom: 1px solid black;
+    font-weight: 700;
+}
+
+/* Graph */
+
+.whole-graph-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 100px;
 }
