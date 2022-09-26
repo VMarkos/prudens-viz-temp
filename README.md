@@ -4,7 +4,8 @@
 
 To animate a knowledge graph SVG:
 1. Visit [vmarkos.github.io/prudens-viz-temp](vmarkos.github.io/prudens-viz-temp).
-2. On the left side, upload the SVG and JSON files corresponding to the desired policy &mdash; the logs file may be generated through [here](https://vmarkos.github.io/prudens-js/) by checking the "Download output" option.
+2. Add a policy and a context string to the corresponding text areas.
+2. On the right side, upload the SVG file corresponding to the desired policy.
 3. Press the "Proceed" button repeatedly to animate the SVG.
 
-Some sample files may be found at [/assets/images/](./assets/images) and [/assets/JSON](./assets/JSON) for SVG and Log data, respectively.
+Some sample SVG images may be found at [/assets/images/](./assets/images).
