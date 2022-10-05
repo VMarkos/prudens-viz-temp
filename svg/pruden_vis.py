@@ -19,6 +19,7 @@ def layer_assign(rule_node_ls, rule_body, rule_head, node_layer):
 def prepare_vis(data):
     
     context=[]
+    node_layer={}
 
     for con_info in data["context"]:
         context.append(con_info["name"])
@@ -28,28 +29,33 @@ def prepare_vis(data):
     edges_ls=[]
     
     keys=data["graph"].keys()
+    
+    
     for key in keys:
         rule=data["graph"][key]
         
-        for dict_id in range(len(rule)):
-            #rule level
-            rule_name="Rule:"+rule[dict_id]["name"]
-            rule_node_ls.append(rule_name)
+        if rule[0]["name"][0]=="$":
+            continue
+        else:
+            for dict_id in range(len(rule)):
+                #rule level
+                rule_name="Rule:"+rule[dict_id]["name"]
+                rule_node_ls.append(rule_name)
 
-            #body
-            rule_body=rule[dict_id]["body"]
-            for literal in rule_body:
-                if literal["sign"] == False:
-                    edges_ls.append(("-"+literal["name"], rule_name))
+                #body
+                rule_body=rule[dict_id]["body"]
+                for literal in rule_body:
+                    if literal["sign"] == False:
+                        edges_ls.append(("-"+literal["name"], rule_name))
+                    else:
+                        edges_ls.append((literal["name"], rule_name))
+                #head 
+                rule_head=rule[dict_id]["head"]
+
+                if rule_head["sign"]==False:
+                    edges_ls.append((rule_name,"-"+rule_head["name"]))
                 else:
-                    edges_ls.append((literal["name"], rule_name))
-            #head 
-            rule_head=rule[dict_id]["head"]
-
-            if rule_head["sign"]==False:
-                edges_ls.append((rule_name,"-"+rule_head["name"]))
-            else:
-                edges_ls.append((rule_name,rule_head["name"]))
+                    edges_ls.append((rule_name,rule_head["name"]))
     
     defeated_rule_node_ls=[]
     defeated_rule_body=[]
@@ -75,7 +81,7 @@ def prepare_vis(data):
             defeated_edges_ls.append((rule_name,rule_head["name"]))
 
     
-    node_layer={}
+   
     
     rule_body={}
     rule_head={}

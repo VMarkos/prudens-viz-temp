@@ -85,6 +85,75 @@
     }
   ],
   "graph": {
+    "a": [
+      {
+        "name": "$0",
+        "head": {
+          "name": "a",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        "body": {
+          "name": "true",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        }
+      }
+    ],
+    "b": [
+      {
+        "name": "$1",
+        "head": {
+          "name": "b",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        "body": {
+          "name": "true",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        }
+      }
+    ],
+    "c": [
+      {
+        "name": "$2",
+        "head": {
+          "name": "c",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        "body": {
+          "name": "true",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        }
+      }
+    ],
     "-z": [
       {
         "name": "R2",
@@ -121,6 +190,29 @@
     ],
     "x": [
       {
+        "name": "R4",
+        "body": [
+          {
+            "name": "b",
+            "sign": true,
+            "isJS": false,
+            "isEquality": false,
+            "isInequality": false,
+            "isAction": false,
+            "arity": 0
+          }
+        ],
+        "head": {
+          "name": "x",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        }
+      },
+      {
         "name": "R3",
         "body": [
           {
@@ -151,21 +243,173 @@
           "isAction": false,
           "arity": 0
         }
-      },
-      {
-        "name": "R4",
-        "body": [
+      }
+    ]
+  },
+  "dilemmas": [],
+  "defeatedRules": [],
+  "logs": [
+    {
+      "facts": [
+        {
+          "name": "a",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "b",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "c",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "true",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        }
+      ],
+      "graph": {
+        "a": [
           {
-            "name": "b",
-            "sign": true,
-            "isJS": false,
-            "isEquality": false,
-            "isInequality": false,
-            "isAction": false,
-            "arity": 0
+            "name": "$0",
+            "head": {
+              "name": "a",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
           }
         ],
-        "head": {
+        "b": [
+          {
+            "name": "$1",
+            "head": {
+              "name": "b",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "c": [
+          {
+            "name": "$2",
+            "head": {
+              "name": "c",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ]
+      },
+      "dilemmas": [],
+      "defeatedRules": []
+    },
+    {
+      "facts": [
+        {
+          "name": "a",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "b",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "c",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "true",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "z",
+          "sign": false,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
           "name": "x",
           "sign": true,
           "isJS": false,
@@ -174,7 +418,583 @@
           "isAction": false,
           "arity": 0
         }
-      }
-    ]
-  }
+      ],
+      "graph": {
+        "a": [
+          {
+            "name": "$0",
+            "head": {
+              "name": "a",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "b": [
+          {
+            "name": "$1",
+            "head": {
+              "name": "b",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "c": [
+          {
+            "name": "$2",
+            "head": {
+              "name": "c",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "-z": [
+          {
+            "name": "R2",
+            "body": [
+              {
+                "name": "a",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              },
+              {
+                "name": "b",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              }
+            ],
+            "head": {
+              "name": "z",
+              "sign": false,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "x": [
+          {
+            "name": "R4",
+            "body": [
+              {
+                "name": "b",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              }
+            ],
+            "head": {
+              "name": "x",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ]
+      },
+      "dilemmas": [],
+      "defeatedRules": []
+    },
+    {
+      "facts": [
+        {
+          "name": "a",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "b",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "c",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "true",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "z",
+          "sign": false,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "x",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        }
+      ],
+      "graph": {
+        "a": [
+          {
+            "name": "$0",
+            "head": {
+              "name": "a",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "b": [
+          {
+            "name": "$1",
+            "head": {
+              "name": "b",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "c": [
+          {
+            "name": "$2",
+            "head": {
+              "name": "c",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "-z": [
+          {
+            "name": "R2",
+            "body": [
+              {
+                "name": "a",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              },
+              {
+                "name": "b",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              }
+            ],
+            "head": {
+              "name": "z",
+              "sign": false,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "x": [
+          {
+            "name": "R4",
+            "body": [
+              {
+                "name": "b",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              }
+            ],
+            "head": {
+              "name": "x",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          },
+          {
+            "name": "R3",
+            "body": [
+              {
+                "name": "z",
+                "sign": false,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              },
+              {
+                "name": "c",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              }
+            ],
+            "head": {
+              "name": "x",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ]
+      },
+      "dilemmas": [],
+      "defeatedRules": []
+    },
+    {
+      "facts": [
+        {
+          "name": "a",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "b",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "c",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "true",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "z",
+          "sign": false,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        },
+        {
+          "name": "x",
+          "sign": true,
+          "isJS": false,
+          "isEquality": false,
+          "isInequality": false,
+          "isAction": false,
+          "arity": 0
+        }
+      ],
+      "graph": {
+        "a": [
+          {
+            "name": "$0",
+            "head": {
+              "name": "a",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "b": [
+          {
+            "name": "$1",
+            "head": {
+              "name": "b",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "c": [
+          {
+            "name": "$2",
+            "head": {
+              "name": "c",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            },
+            "body": {
+              "name": "true",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "-z": [
+          {
+            "name": "R2",
+            "body": [
+              {
+                "name": "a",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              },
+              {
+                "name": "b",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              }
+            ],
+            "head": {
+              "name": "z",
+              "sign": false,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ],
+        "x": [
+          {
+            "name": "R4",
+            "body": [
+              {
+                "name": "b",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              }
+            ],
+            "head": {
+              "name": "x",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          },
+          {
+            "name": "R3",
+            "body": [
+              {
+                "name": "z",
+                "sign": false,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              },
+              {
+                "name": "c",
+                "sign": true,
+                "isJS": false,
+                "isEquality": false,
+                "isInequality": false,
+                "isAction": false,
+                "arity": 0
+              }
+            ],
+            "head": {
+              "name": "x",
+              "sign": true,
+              "isJS": false,
+              "isEquality": false,
+              "isInequality": false,
+              "isAction": false,
+              "arity": 0
+            }
+          }
+        ]
+      },
+      "dilemmas": [],
+      "defeatedRules": []
+    }
+  ]
 }

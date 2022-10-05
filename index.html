@@ -10,6 +10,8 @@
         src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js">
         </script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/theme/monokai.min.css">
+        <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
         <script type="text/javascript" src="./scripts/main.js"></script>
         <script type="text/javascript" src="./scripts/simpleMode.js"></script>
         <script type="text/javascript" src="./scripts/prudensMode.js"></script>
@@ -46,13 +48,24 @@
                         <form class="form-class">
                             <label name="graph-filename">Graph SVG File</label>
                             <br>
-                            <input type="file" id="graphFile" name="graph-filename" onchange="updateGraphPlot(event)">
+                            <py-script>
+                            import json
+                            from pruden_vis.py import *
+                            f_output = open('mock_data/test_005.json')
+                            data = json.load(f_output)
+                            rule_node_ls, rule_body, rule_head, node_layer,edges_ls, defeated_rule_node_ls, defeated_edges_ls=prepare_vis(data)
+                            layer_assign(rule_node_ls, rule_body, rule_head, node_layer)
+                            vis_pruden(node_layer, edges_ls, defeated_rule_node_ls,defeated_edges_ls)
+                            </py-script>
+                            <!-- <input type="file" id="graphFile" name="graph-filename" onchange="updateGraphPlot(event)"> -->
                             <!-- <br>
                             <label name="logs-filename">Prudens Logs File</label>
                             <br>
                             <input type="file" id="logsFile" name="logs-filename" onchange="updateLogs(event)"> -->
                         </form>
                         <div class="next-button" onclick="proceed()">Proceed</div>
+
+                        
                     </div>
                 </div>
             </div>
