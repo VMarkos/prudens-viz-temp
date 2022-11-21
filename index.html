@@ -11,13 +11,18 @@
         </script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/theme/monokai.min.css">
         <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+        <script src="https://d3js.org/d3.v3.min.js"></script>
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-graphviz/4.4.0/d3-graphviz.min.js"
+            integrity="sha512-T6HYgCVKXsFOabAI/rq1eNK4ATO2u3ziaOuPGLrHNf11UBROtR4f3fOKrZzyej79DuttNbW80U/XMcQ+u09NQg=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
         <script type="text/javascript" src="./scripts/main.js"></script>
         <script type="text/javascript" src="./scripts/simpleMode.js"></script>
         <script type="text/javascript" src="./scripts/prudensMode.js"></script>
         <script type="text/javascript" src="./scripts/parsers.js"></script>
         <script type="text/javascript" src="./scripts/prudens.js"></script>
         <script type="text/javascript" src="./scripts/prudensUtils.js"></script>
+        <script type="text/javascript" src="./svg/networkx/networkx.js"></script>
+        <script type="text/javascript" src="./svg/prudens_viz.js"></script>
         <title>
             Knowledge Graph Animation &mdash; Mock up
         </title>
@@ -45,10 +50,10 @@
                 </div>
                 <div class="file-upload-container">
                     <div class="file-upload-item">
-                        <form class="form-class">
+                        <!-- <form> -->
                             <label name="graph-filename">Graph SVG File</label>
                             <br>
-                            <py-script>
+                            <!-- <py-script>
                             import json
                             from pruden_vis.py import *
                             f_output = open('mock_data/test_005.json')
@@ -56,14 +61,15 @@
                             rule_node_ls, rule_body, rule_head, node_layer,edges_ls, defeated_rule_node_ls, defeated_edges_ls=prepare_vis(data)
                             layer_assign(rule_node_ls, rule_body, rule_head, node_layer)
                             vis_pruden(node_layer, edges_ls, defeated_rule_node_ls,defeated_edges_ls)
-                            </py-script>
-                            <!-- <input type="file" id="graphFile" name="graph-filename" onchange="updateGraphPlot(event)"> -->
-                            <!-- <br>
+                            </py-script> -->
+                            <input type="file" id="graphFile" name="graph-filename" onchange="updateGraphPlot(event)">
+                            <br>
                             <label name="logs-filename">Prudens Logs File</label>
                             <br>
-                            <input type="file" id="logsFile" name="logs-filename" onchange="updateLogs(event)"> -->
-                        </form>
-                        <div class="next-button" onclick="proceed()">Proceed</div>
+                            <input type="file" id="logsFile" name="logs-filename" onchange="updateLogs(event)">
+                        <!-- </form> -->
+                        <!-- <div class="next-button" onclick="proceed()">Proceed</div> -->
+                        <div class="next-button" onclick="testGraph()">Proceed</div>
 
                         
                     </div>
@@ -72,7 +78,7 @@
             <div id="gc" class="whole-graph-container">
                 <div class="code-label">Animated Graph</div>
                 <div class="graph-container" id="graph-container">
-
+                    <div id="canvas" class="canvas-container"></div>
                 </div>
             </div>
         </div>
