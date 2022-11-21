@@ -1,4 +1,5 @@
 let LOGS = [];
+let DATA;
 let currentIndex = 0;
 let done = false;
 let initialized = false;
@@ -93,6 +94,7 @@ async function loadLogs(logs) {
         if (isValidExtension) {
             const jsonLogs = await logs.files[0].text();
             LOGS = parseLogs(JSON.parse(jsonLogs));
+            DATA = JSON.parse(jsonLogs);
         }
     } else {
         alert("Wrong logs type. Please upload JSON file.");
