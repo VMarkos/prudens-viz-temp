@@ -99,3 +99,9 @@ input {
     gap: 20px;
     padding-bottom: 100px;
 }
+
+.canvas-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
