@@ -1,6 +1,7 @@
 function layerAssign(ruleNodeLs, ruleBody, ruleHead, nodeLayer) {
     let ruleId, ruleBodyLiterals, assignedNodes, layerInfo, i;
-    // console.log("rnls:", ruleNodeLs);
+    console.log("arguments:", arguments);
+    // debugger;
     if (ruleNodeLs.length > 0) {
         for (let i = 0; i < ruleNodeLs.length; i++) {
             // i = 0;
@@ -18,15 +19,15 @@ function layerAssign(ruleNodeLs, ruleBody, ruleHead, nodeLayer) {
                 }
                 nodeLayer[ruleId] = Math.max(...layerInfo) + 1;
                 nodeLayer[ruleHead[ruleId]] = Math.max(...layerInfo) + 2;
-                // console.log("splice before:", i, ruleNodeLs);
+                console.log("splice before:", i, ruleNodeLs);
                 ruleNodeLs.splice(i, 1); // FIXME This might be a source of logical errors!
                 // i--;
-                // console.log("splice after:", i, ruleNodeLs);
+                console.log("splice after:", i, ruleNodeLs);
             }
             // layerAssign(ruleNodeLs, ruleBody, ruleHead, nodeLayer);
         }
         // return;
-        layerAssign(ruleNodeLs, ruleBody, ruleHead, nodeLayer); // FIXME Where is ruleHead used?
+        layerAssign(ruleNodeLs, ruleBody, ruleHead, nodeLayer);
     } else {
         // console.log(nodeLayer);
         return nodeLayer;
@@ -38,8 +39,9 @@ function prepareVis(data) {
     const nodeLayer = {};
     // console.log(data);
     for (const contInfo of data["context"]) {
-        context.push(contInfo["name"]);
-        nodeLayer[contInfo[["name"]]] = 0;
+        const nameString = `${contInfo["sign"] ? "" : "-"}` + contInfo["name"];
+        context.push(nameString);
+        nodeLayer[nameString] = 0;
     }
     const ruleNodeLs = [];
     const edgesLs = [];
@@ -197,9 +199,15 @@ function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs) {
         weighted: false,
         edgeStyle: {
             "stroke-width": 5,
+            "fill": (d) => {
+                if (d.edge[0][0] === "-") {
+                    return "#ac0000";
+                }
+                return "#00ac00";
             },
+        },
         nodeStyle: {
-            fill: "#ffffff",
+            "fill": "#ffffff",
         }
         });
     // console.log(document.getElementById("canvas").outerHTML);
