@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg class="jsnx" pointer-events="all" width="0px" height="158px" style="opacity: 1;">
+<g>
+<g class="edges">
+<g class="edge" transform="translate(73.82148160879915,116.70938582339669)rotate(-170.73354167212784)">
+<path class="line" style="fill: rgb(0, 0, 0); stroke-width: 0px;" d="M 12 0 L 12 -5 L 28.619166624713216 -5 L 28.619166624713216 -10 L 48.619166624713216 0 z"></path></g>
+<g class="edge" transform="translate(-29.797174101298303,148.96822845345318)rotate(-43.81803775544048)">
+<path class="line" style="fill: rgb(0, 0, 0); stroke-width: 0px;" d="M 12 0 L 12 -5 L 28.69021927664761 -5 L 28.69021927664761 -10 L 48.69021927664761 0 z"></path></g>
+<g class="edge" transform="translate(-29.797174101298303,148.96822845345318)rotate(13.772746615512402)">
+<path class="line" style="fill: rgb(0, 0, 0); stroke-width: 0px;" d="M 12 0 L 12 -5 L 27.943240786130254 -5 L 27.943240786130254 -10 L 47.943240786130254 0 z"></path></g>
+<g class="edge" transform="translate(-85.16056179672141,56.972994893089165)rotate(7.105245028306864)">
+<path class="line" style="fill: rgb(0, 0, 0); stroke-width: 0px;" d="M 12 0 L 12 -5 L 27.94410678385635 -5 L 27.94410678385635 -10 L 47.94410678385635 0 z"></path></g>
+<g class="edge" transform="translate(73.05204388834431,22.049904414336375)rotate(-165.21132125075647)">
+<path class="line" style="fill: rgb(0, 0, 0); stroke-width: 0px;" d="M 12 0 L 12 -5 L 28.461205419681804 -5 L 28.461205419681804 -10 L 48.461205419681804 0 z"></path></g>
+<g class="edge" transform="translate(14.593685788334591,6.616896637108144)rotate(59.48445991686173)">
+<path class="line" style="fill: rgb(0, 0, 0); stroke-width: 0px;" d="M 12 0 L 12 -5 L 29.112063893823567 -5 L 29.112063893823567 -10 L 49.11206389382357 0 z"></path></g>
+<g class="edge" transform="translate(14.593685788334591,6.616896637108144)rotate(-179.09724896706035)">
+<path class="line" style="fill: rgb(0, 0, 0); stroke-width: 0px;" d="M 12 0 L 12 -5 L 27.753874507265046 -5 L 27.753874507265046 -10 L 47.753874507265046 0 z"></path></g>
+<g class="edge" transform="translate(-66.61415709582369,109.53266504909126)rotate(-47.79836910838527)">
+<path class="line" style="fill: rgb(0, 0, 0); stroke-width: 0px;" d="M 12 0 L 12 -5 L 28.942129878147213 -5 L 28.942129878147213 -10 L 48.94212987814721 0 z"></path></g></g>
+<g class="nodes">
+<g class="node" transform="translate(73.82148160879915,116.70938582339669)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle></g>
+<g class="node" transform="translate(-29.797174101298303,148.96822845345318)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle></g>
+<g class="node" transform="translate(-85.16056179672141,56.972994893089165)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle></g>
+<g class="node" transform="translate(13.99338588137284,106.94811931209505)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle></g>
+<g class="node" transform="translate(28.42255651727575,163.23900567982247)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle></g>
+<g class="node" transform="translate(73.05204388834431,22.049904414336375)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle></g>
+<g class="node" transform="translate(14.593685788334591,6.616896637108144)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle></g>
+<g class="node" transform="translate(45.6246831519366,59.264418477959296)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle></g>
+<g class="node" transform="translate(-25.67678865499956,64.38762036836047)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle></g>
+<g class="node" transform="translate(-66.61415709582369,109.53266504909126)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle></g>
+<g class="node" transform="translate(-45.15277189765745,5.67545486729845)scale(1)"><circle class="node-shape" r="10" style="stroke-width: 2px; stroke: rgb(51, 51, 51); fill: rgb(153, 153, 153); cursor: pointer;"></circle>
+</g>
+</g>
+</g>
+</svg>

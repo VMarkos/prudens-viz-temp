@@ -76,8 +76,10 @@ function prepareVis(data) {
     }
     ruleBody = {};
     ruleHead = {};
+    // console.log("ruleNodeLs:", ruleNodeLs);
+    // debugger;
     let ruleId, ruleBodyLiterals, edge, ruleHeadLiterals;
-    for (let i = 0; i < ruleNodeLs.length + defeatedRuleNodeLs; i++) {
+    for (let i = 0; i < ruleNodeLs.length + defeatedRuleNodeLs.length; i++) {
         if (i < ruleNodeLs.length) {
             ruleId = ruleNodeLs[i]
         } else {
@@ -88,7 +90,7 @@ function prepareVis(data) {
             if (j < edgesLs.length) {
                 edge = edgesLs[j];
             } else {
-                edge = defeatedEdgesLs[j = edgesLs.length];
+                edge = defeatedEdgesLs[j - edgesLs.length];
             }
             if (ruleId === edge[1]) {
                 ruleBodyLiterals.push(edge[0]);
@@ -98,13 +100,15 @@ function prepareVis(data) {
             }
         }
         ruleBody[ruleId] = ruleBodyLiterals;
+        // console.log("pushed in ruleBody:", ruleBodyLiterals);
         ruleHead[ruleId] = ruleHeadLiterals;
     }
+    // console.log(ruleBody);
     return [ruleNodeLs.concat(defeatedRuleNodeLs), ruleBody, ruleHead, nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs];
 }
 
 function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs) {
-    console.log(nodeLayer);
+    // console.log(nodeLayer);
     // debugger;
     const G = new jsnx.DiGraph(); // ? rankdir = "LR"
     for (const node of Object.keys(nodeLayer)) {
@@ -131,10 +135,10 @@ function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs) {
             // }
         }
     }
-    console.log(edgesLs);
+    // console.log(edgesLs);
     // debugger;
     for (const edge of edgesLs) {
-        console.log(edge);
+        // console.log(edge);
         G.addEdge(edge[0][0] === "R" ? edge[0].substring(5) : edge[0], edge[1][0] === "R" ? edge[1].substring(5) : edge[1]);
         // if (edge[1][0] === "R") {
         //     G.addEdge
@@ -151,7 +155,8 @@ function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs) {
         //     }
         // }
     }
-    for (const edge in defeatedEdgesLs) {
+    // console.log("defeatedEdgesLs:", defeatedEdgesLs);
+    for (const edge of defeatedEdgesLs) {
         G.addEdge(edge[0][0] === "R" ? edge[0].substring(5) : edge[0], edge[1][0] === "R" ? edge[1].substring(5) : edge[1]);
         // if (edge[1][0] === "R") {
         //     if (edge[0][0] === "-") {
@@ -167,7 +172,7 @@ function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs) {
         //     }
         // }
     }
-    console.log(G);
+    // console.log(G);
     // document.getElementById("graph-container").innerHTML = document.getElementById("canvas").outerHTML;
     // const A = jsnx.nxagraph.toAgraph(G);
     // console.log(A);
@@ -194,15 +199,18 @@ function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs) {
             "stroke-width": 5,
             },
         nodeStyle: {
-            fill: "#ffeeee",
+            fill: "#ffffff",
         }
         });
     // console.log(document.getElementById("canvas").outerHTML);
     const plot = document.getElementsByClassName("jsnx")[0];
     // console.log("plot", plot);
     setTimeout(() => {
-        plot.setAttribute("width", "1000");
-        plot.setAttribute("height", "1000");
+        const gRects = document.getElementById("gc").getClientRects();
+        const lRects = document.getElementById("graph-label").getClientRects();
+        console.log(lRects);
+        plot.setAttribute("width", gRects[0].width - 20);
+        plot.setAttribute("height", gRects[0].height - lRects[0].height);
         plot.setAttribute("opacity", "1");
     }, 0);
     // document.getElementById("graph-container").innerHTML = document.getElementById("canvas").outerHTML;
@@ -240,9 +248,9 @@ function isSubset(X, Y) { // true if x is subset of y.
 
 function testGraph() {
     const parsedLogs = prepareVis(DATA);
-    console.log(parsedLogs);
+    // console.log(parsedLogs);
     // debugger;
     layerAssign(parsedLogs[0], parsedLogs[1], parsedLogs[2], parsedLogs[3]);
-    console.log(parsedLogs);
+    // console.log(parsedLogs);
     visPrudens(parsedLogs[3], parsedLogs[4], parsedLogs[5], parsedLogs[6]);
 }

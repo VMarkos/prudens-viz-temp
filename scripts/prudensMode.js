@@ -7,7 +7,7 @@ CodeMirror.defineSimpleMode("simplemode", {
       // groups must span the whole string in this case
       {regex: /(([A-Z]\w*)(?=(\s*,|\))))/,
        token: "variable-3"},
-      {regex: /(([a-z]\w*)(?=(\s*,|\))))/,
+      {regex: /(([a-z]\w*)(?=(\s*,|\)|(\s+implies))))/,
        token: "variable-2"},
       // Rules are matched in the order in which they appear, so there is
       // no ambiguity between this one and the one above

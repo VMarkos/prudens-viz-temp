@@ -4,6 +4,8 @@ let currentIndex = 0;
 let done = false;
 let initialized = false;
 
+let loaded = false;
+
 let policyEditor;
 let contextEditor;
 let consoleEditor;
@@ -11,6 +13,13 @@ let consoleEditor;
 /* CodeMirror Container */
 
 function initializeEditors() {
+    if (loaded) {
+        return;
+    }
+    if (!loaded) {
+        loaded = true;
+    }
+    console.log("reload");
     let policyContainer = document.getElementById("policy-container");
     let contextContainer = document.getElementById("context-container");
     let consoleContainer = document.getElementById("console-container");
@@ -20,7 +29,7 @@ function initializeEditors() {
     tabSize: 2,
     gutter: true,
     value: '@Knowledge\n',
-    theme: "monokai",
+    theme: "default",
     mode: "simplemode",
     });
 
@@ -30,17 +39,17 @@ function initializeEditors() {
     lineNumbers: true,
     tabSize: 2,
     gutter: true,
-    theme: "monokai",
+    theme: "default",
     mode: "simplemode",
     });
 
-    contextEditor.setSize(400, 300);
+    contextEditor.setSize(400, 50);
 
     consoleEditor = CodeMirror(consoleContainer, { // TODO Change that to some textarea or so?
     lineNumbers: true,
     tabSize: 2,
     gutter: true,
-    theme: "monokai",
+    theme: "default",
     readOnly: true,
     });
 
@@ -48,7 +57,12 @@ function initializeEditors() {
     consoleEditor.setValue("~$ ");
 }
 
-window.addEventListener("load", initializeEditors);
+function onLoad() {
+    initializeEditors();
+    // window.removeEventListener("load", onLoad, false);
+}
+
+window.addEventListener("load", onLoad, false);
 
 /* Graph animation */
 
@@ -99,7 +113,7 @@ async function loadLogs(logs) {
     } else {
         alert("Wrong logs type. Please upload JSON file.");
     }
-    console.log(LOGS);
+    // console.log(LOGS);
 }
 
 function parseLogs(jsonLogs) {
@@ -127,6 +141,10 @@ function filterRules(rules) {
         }
     }
     return (filteredRules.length > 0) ? filteredRules : ["\$"];
+}
+
+function updateConsole() {
+    document.getElementById("");
 }
 
 function proceed() {
@@ -213,26 +231,28 @@ function deduce() {
     };
   }
 
-  function kbParser() {
+function kbParser() {
     const kbAll = policyEditor.getValue();
     return parseKB(kbAll);
-  }
+}
   
-  function contextParser() {
+function contextParser() {
     const context = contextEditor.getValue();
     const contextList = parseContext(context);
     if (contextList["type"] === "error") {
         return contextList;
     }
     return contextList;
-  }
+}
   
-  function consoleOutput() {
+function compile() {
     let newText;
     const output = deduce();
     const outputObject = output["outputObject"];
     LOGS = parseLogs(outputObject);
+    DATA = outputObject;
     newText = output["outputString"];
     const previous = consoleEditor.getValue();
     consoleEditor.setValue(previous + newText + "\n~$");
-  }
+    testGraph();
+}

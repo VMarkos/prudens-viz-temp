@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="../svg/networkx/networkx.js"></script>
+</head>
+<body>
+
+    <script>
+        // This is a graph generator
+        var G = jsnx.cycleGraph(6);
+        // Compute the shortest path between 0 and 4
+        var path = jsnx.bidirectionalShortestPath(G, 0, 4);
+        // A simple way to color all nodes in the path:
+        G.addNodesFrom(path, {color: '#FFF'});
+        // Color the start and end differently
+        G.node.get(0).color = '#0F0'; // start is green
+        G.node.get(4).color = '#F00'; // end is red
+
+        jsnx.draw(G, {
+        element: '#demo-canvas',
+        withLabels: true,
+        nodeStyle: {
+            fill: function(d) {
+                return d.data.color || '#AAA'; // any node without color is gray
+            }
+        }
+        });
+    </script>
+
+    <div id="demo-canvas"></div>
+</body>
+</html>

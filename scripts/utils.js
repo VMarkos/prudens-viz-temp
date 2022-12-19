@@ -87,7 +87,7 @@ function consoleOutput() {
     // if (document.getElementById("exec-button").innerHTML != "Deduce!") {
     newText = "I am quite buggy at the moment - wait for some future update!\n\nThanks for your patience! :)";
     // } else {
-    newText = infer();
+    newText = deduce();
     // }
     const previous = document.getElementById(tab + "-console").value;
     document.getElementById(tab + "-console").value = previous + newText + "\n~$ ";
