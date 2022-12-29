@@ -13,7 +13,7 @@ CodeMirror.defineSimpleMode("simplemode", {
       // no ambiguity between this one and the one above
       {regex: /(implies|::|true|@KnowledgeBase|@Knowledge|@Procedures|@Code)/,
        token: "keyword"},
-      {regex: /(\w+)(?=(\s*)(::))/, token: "variable-3"},
+      {regex: /((\w+)|(\$\d+))(?=(\s*)(::))/, token: "variable-3"},
       {regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i,
        token: "number"},
       {regex: /\/\/.*/, token: "comment"},

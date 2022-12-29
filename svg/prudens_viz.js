@@ -1,6 +1,11 @@
+const DEFEATED_OPACITY = 0.2;
+const POSITIVE_COLOR = "#00ac00";
+const NEGATIVE_COLOR = "#ac0000";
+const DILEMMA_COLOR = "#0000ac";
+
 function layerAssign(ruleNodeLs, ruleBody, ruleHead, nodeLayer) {
     let ruleId, ruleBodyLiterals, assignedNodes, layerInfo, i;
-    console.log("arguments:", arguments);
+    // console.log("arguments:", arguments);
     // debugger;
     if (ruleNodeLs.length > 0) {
         for (let i = 0; i < ruleNodeLs.length; i++) {
@@ -19,10 +24,10 @@ function layerAssign(ruleNodeLs, ruleBody, ruleHead, nodeLayer) {
                 }
                 nodeLayer[ruleId] = Math.max(...layerInfo) + 1;
                 nodeLayer[ruleHead[ruleId]] = Math.max(...layerInfo) + 2;
-                console.log("splice before:", i, ruleNodeLs);
+                // console.log("splice before:", i, ruleNodeLs);
                 ruleNodeLs.splice(i, 1); // FIXME This might be a source of logical errors!
                 // i--;
-                console.log("splice after:", i, ruleNodeLs);
+                // console.log("splice after:", i, ruleNodeLs);
             }
             // layerAssign(ruleNodeLs, ruleBody, ruleHead, nodeLayer);
         }
@@ -37,7 +42,7 @@ function layerAssign(ruleNodeLs, ruleBody, ruleHead, nodeLayer) {
 function prepareVis(data) {
     const context = [];
     const nodeLayer = {};
-    // console.log(data);
+    console.log("data:", data);
     for (const contInfo of data["context"]) {
         const nameString = `${contInfo["sign"] ? "" : "-"}` + contInfo["name"];
         context.push(nameString);
@@ -106,139 +111,232 @@ function prepareVis(data) {
         ruleHead[ruleId] = ruleHeadLiterals;
     }
     // console.log(ruleBody);
-    return [ruleNodeLs.concat(defeatedRuleNodeLs), ruleBody, ruleHead, nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs];
+    const dilemmas = computeDilemmas(data.dilemmas);
+    return [ruleNodeLs.concat(defeatedRuleNodeLs), ruleBody, ruleHead, nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs, dilemmas];
 }
 
-function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs) {
+function computeDilemmas(dilemmas) {
+    const nodes = [];
+    const edges = [];
+    const factNodes = [];
+    const factEdges = [];
+    let sx, sh;
+    for (const dilemma of dilemmas) {
+        if (!nodes.includes(dilemma[0]["name"])) {
+            nodes.push(dilemma[0]["name"]);
+        }
+        if (!nodes.includes(dilemma[1]["name"])) {
+            nodes.push(dilemma[1]["name"]);
+        }
+        edges.push([
+            dilemma[0]["name"],
+            dilemma[1]["name"],
+        ]);
+        for (const x of dilemma[0]["body"]) {
+            sx = (x["sign"] ? "" : "-") +  x["name"];
+            if (!factNodes.includes(sx)) {
+                factNodes.push(sx);
+            }
+            factEdges.push([sx, dilemma[0]["name"]]);
+        }
+        sh = (dilemma[0]["head"]["sign"] ? "" : "-") + dilemma[0]["head"]["name"];
+        if (!factNodes.includes(sh)) {
+            factNodes.push(sh);
+        }
+        factEdges.push([dilemma[0]["name"], sh]);
+        for (const x of dilemma[1]["body"]) {
+            sx = (x["sign"] ? "" : "-") +  x["name"];
+            if (!factNodes.includes(sx)) {
+                factNodes.push(sx);
+            }
+            factEdges.push([sx, dilemma[1]["name"]]);
+        }
+        sh = (dilemma[1]["head"]["sign"] ? "" : "-") + dilemma[1]["head"]["name"];
+        if (!factNodes.includes(sh)) {
+            factNodes.push(sh);
+        }
+        factEdges.push([dilemma[1]["name"], sh]);
+    }
+    return {
+        nodes: nodes,
+        edges: edges,
+        factNodes: factNodes,
+        factEdges: factEdges,
+    };
+}
+
+function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs, dilemmas) {
     // console.log(nodeLayer);
     // debugger;
+    console.log("dilemmas:", dilemmas);
     const G = new jsnx.DiGraph(); // ? rankdir = "LR"
+    let nodeLabel, sign, isRule;
     for (const node of Object.keys(nodeLayer)) {
-        if (node[0] === "R") {
-            G.addNode(node.substring(5));
-        } else {
-            G.addNode(node);
-            // if (node[0] === "-") {
-            //     G.addNode(node.substring(1));
-            // } else {
-            //     G.addNode(node);
-            // }
+        // console.log("node:", node);
+        isRule = node[0] === "R";
+        nodeLabel = isRule ? node.substring(5) : node;
+        // console.log("nodeLabel (before):", nodeLabel);
+        sign = nodeLabel[0] !== "-";
+        nodeLabel = sign ? nodeLabel : nodeLabel.substring(1);
+        // console.log("nodeLabel (after):", nodeLabel);
+        if (G.nodes().includes(nodeLabel)) {
+            continue;
         }
+        // console.log(nodeLabel, defeatedRuleNodeLs);
+        G.addNode(nodeLabel, data = {
+            sign: sign,
+            isDefeated: false,
+            isRule: isRule,
+        });
     }
+    // console.log("Change");
     for (const node of defeatedRuleNodeLs) {
-        if (node[0] === "R") {
-            G.addNode(node.substring(5));
-        } else {
-            G.addNode(node);
-            // if (node[0] === "-") {
-            //     G.addNode(node.substring(1));
-            // } else {
-            //     G.addNode(node);
-            // }
+        // console.log("node:", node);
+        isRule = node[0] === "R";
+        nodeLabel = isRule ? node.substring(5) : node;
+        // console.log("nodeLabel (before):", nodeLabel);
+        sign = nodeLabel[0] !== "-";
+        nodeLabel = sign ? nodeLabel : nodeLabel.substring(1);
+        // console.log("nodeLabel (after):", nodeLabel);
+        if (G.nodes().includes(nodeLabel)) {
+            G.nodes(true)[G.nodes().indexOf(nodeLabel)][1].isDefeated = true;
+            continue;
+        }
+        G.addNode(nodeLabel, data = {
+            sign: sign,
+            isDefeated: true,
+            isRule: isRule,
+        });
+    }
+    for (const node of dilemmas.nodes) {
+        if (!G.nodes().includes(node)) {
+            G.addNode(node, data = {
+                sign: true,
+                isDefeated: true,
+                isRule: true,
+            });
         }
     }
-    // console.log(edgesLs);
-    // debugger;
+    for (const node of dilemmas.factNodes) {
+        sign = node[0] !== "-";
+        nodeLabel = sign ? node : node.substring(1);
+        console.log("nodeLabel:", nodeLabel);
+        if (!G.nodes().includes(nodeLabel)) {
+            G.addNode(nodeLabel, data = {
+                sign: sign,
+                isDefeated: false,
+                isRule: false,
+            });
+        }
+    }
+    let edgeStart, edgeEnd;
     for (const edge of edgesLs) {
-        // console.log(edge);
-        G.addEdge(edge[0][0] === "R" ? edge[0].substring(5) : edge[0], edge[1][0] === "R" ? edge[1].substring(5) : edge[1]);
-        // if (edge[1][0] === "R") {
-        //     G.addEdge
-        //     if (edge[0][0] === "-") {
-        //         G.addEdge(edge[0], edge[1].substring(5)); // TODO Styling
-        //     } else {
-        //         G.addEdge(edge[0], edge[1].substring(5)); // TODO Styling
-        //     }
-        // } else {
-        //     if (edge[1][0] === "-") {
-        //         G.addEdge(edge[0], edge[1].substring(5)); // TODO Styling
-        //     } else {
-        //         G.addEdge(edge[1].substring(5), edge[0]); // TODO Styling
-        //     }
-        // }
+        edgeStart = edge[0][0] === "R" ? edge[0].substring(5) : edge[0];
+        edgeEnd = edge[1][0] === "R" ? edge[1].substring(5) : edge[1];
+        sign = edgeStart[0] !== "-" && edgeEnd[0] !== "-";
+        edgeStart = edgeStart[0] === "-" ? edgeStart.substring(1) : edgeStart;
+        edgeEnd = edgeEnd[0] === "-" ? edgeEnd.substring(1) : edgeEnd;
+        G.addEdge(edgeStart, edgeEnd, data = {
+            sign: sign,
+            isDefeated: false,
+        });
     }
-    // console.log("defeatedEdgesLs:", defeatedEdgesLs);
     for (const edge of defeatedEdgesLs) {
-        G.addEdge(edge[0][0] === "R" ? edge[0].substring(5) : edge[0], edge[1][0] === "R" ? edge[1].substring(5) : edge[1]);
-        // if (edge[1][0] === "R") {
-        //     if (edge[0][0] === "-") {
-        //         G.addEdge(edge[0], edge[1].substring(5)); // TODO Styling
-        //     } else {
-        //         G.addEdge(edge[0], edge[1].substring(5)); // TODO Styling
-        //     }
-        // } else {
-        //     if (edge[1][0] === "-") {
-        //         G.addEdge(edge[0], edge[1].substring(5)); // TODO Styling
-        //     } else {
-        //         G.addEdge(edge[1].substring(5), edge[0]); // TODO Styling
-        //     }
-        // }
+        edgeStart = edge[0][0] === "R" ? edge[0].substring(5) : edge[0];
+        edgeEnd = edge[1][0] === "R" ? edge[1].substring(5) : edge[1];
+        sign = edgeStart[0] !== "-" && edgeEnd[0] !== "-";
+        edgeStart = edgeStart[0] === "-" ? edgeStart.substring(1) : edgeStart;
+        edgeEnd = edgeEnd[0] === "-" ? edgeEnd.substring(1) : edgeEnd;
+        G.addEdge(edgeStart, edgeEnd, data = {
+            sign: sign,
+            isDefeated: true,
+        });
     }
-    // console.log(G);
-    // document.getElementById("graph-container").innerHTML = document.getElementById("canvas").outerHTML;
-    // const A = jsnx.nxagraph.toAgraph(G);
-    // console.log(A);
-    // let nodeLs;
-    // console.log(nodeLayer);
-    // for (const layerId of Object.values(nodeLayer)) { // TODO Might contain duplicates?
-    //     console.log(layerId);
-    //     // nodeLs = [];
-    //     for (const node in nodeLayer) {
-    //         if (node === layerId) {
-    //             G.addNode(node);
-    //             // nodeLs.push(node);
-    //         }
-    //     }
-    // }
+    for (const edge of dilemmas.edges) {
+        G.addEdge(edge[0], edge[1], data = {
+            sign: undefined, // TODO irrelevant?
+            isDefeated: true, // TODO irrelevant?
+            isDilemma: true,
+        });
+    }
+    for (const edge of dilemmas.factEdges) {
+        edgeStart = edge[0];
+        edgeEnd = edge[1];
+        sign = edgeStart[0] !== "-" && edgeEnd[0] !== "-";
+        edgeStart = edgeStart[0] === "-" ? edgeStart.substring(1) : edgeStart;
+        edgeEnd = edgeEnd[0] === "-" ? edgeEnd.substring(1) : edgeEnd;
+        G.addEdge(edgeStart, edgeEnd, data = {
+            sign: sign,
+            isDefeated: true,
+            isDilemma: false,
+        });
+    }
     jsnx.draw(G, {
         element: "#canvas",
         withLabels: true,
-        nodeAttr: {
-            "r": 20,
-        },
+        nodeShape: "rect",
+        nodeAttr: graphStyle.nodeAttr,
         weighted: false,
         edgeStyle: {
             "stroke-width": 5,
-            "fill": (d) => {
-                if (d.edge[0][0] === "-") {
-                    return "#ac0000";
-                }
-                return "#00ac00";
-            },
+            "fill": graphStyle.edgeColor,
+            "opacity": graphStyle.graphOpacity,
         },
         nodeStyle: {
             "fill": "#ffffff",
-        }
-        });
+            "opacity": graphStyle.graphOpacity,
+        },
+        edgeOffset: graphStyle.edgeOffset,
+    });
     // console.log(document.getElementById("canvas").outerHTML);
     const plot = document.getElementsByClassName("jsnx")[0];
     // console.log("plot", plot);
     setTimeout(() => {
         const gRects = document.getElementById("gc").getClientRects();
         const lRects = document.getElementById("graph-label").getClientRects();
-        console.log(lRects);
+        // console.log(lRects);
         plot.setAttribute("width", gRects[0].width - 20);
         plot.setAttribute("height", gRects[0].height - lRects[0].height);
         plot.setAttribute("opacity", "1");
     }, 0);
-    // document.getElementById("graph-container").innerHTML = document.getElementById("canvas").outerHTML;
-    // const A = jsnx.nxagraph.toAgraph(G);
-    // console.log(A);
-    // let nodeLs;
-    // for (const layerId of nodeLayer) { // TODO Might contain duplicates?
-    //     nodeLs = [];
-    //     for (const node in nodeLayer) {
-    //         if (node === layerId) {
-    //             nodeLs.push(node);
-    //         }
-    //     }
-    //     // A.addSubgraph(nodeLs); // ? rank = "same";
-    // }
-    // A.draw("file.svg", {prog: "dot"});
 }
 
 function stringifyLiteral(literal) {
     return `${literal["sign"] ? "" : "-"}${literal["name"]}`;
+}
+
+// Style
+
+const graphStyle = {
+    nodeShape: (d) => {
+        if (d.data.isRule) {
+            return "rect";
+        }
+        return "circle";
+    },
+    graphOpacity: (d) => {
+        if (d.data.isDefeated) {
+            return DEFEATED_OPACITY;
+        }
+        return 1.0;
+    },
+    edgeColor: (d) => {
+        if (d.data.isDilemma) {
+            return DILEMMA_COLOR;
+        } else if (!d.data.sign) {
+            return NEGATIVE_COLOR;
+        }
+        return POSITIVE_COLOR;
+    },
+    edgeOffset: 20,
+    nodeAttr: {
+        height: (d) => {return 30},
+        width: (d) => {return 30},
+        x: (d) => {return -15},
+        y: (d) => {return -15},
+        rx: (d) => {return d.data.isRule ? 5 : 20},
+        ry: (d) => {return d.data.isRule ? 5 : 20},
+    }
 }
 
 // UTILS
@@ -260,5 +358,5 @@ function testGraph() {
     // debugger;
     layerAssign(parsedLogs[0], parsedLogs[1], parsedLogs[2], parsedLogs[3]);
     // console.log(parsedLogs);
-    visPrudens(parsedLogs[3], parsedLogs[4], parsedLogs[5], parsedLogs[6]);
+    visPrudens(parsedLogs[3], parsedLogs[4], parsedLogs[5], parsedLogs[6], parsedLogs[7]);
 }

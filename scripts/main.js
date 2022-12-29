@@ -25,32 +25,39 @@ function initializeEditors() {
     let consoleContainer = document.getElementById("console-container");
 
     policyEditor = CodeMirror(policyContainer, {
-    lineNumbers: true,
-    tabSize: 2,
-    gutter: true,
-    value: '@Knowledge\n',
-    theme: "default",
-    mode: "simplemode",
+        lineNumbers: true,
+        tabSize: 2,
+        gutter: true,
+        value: '@Knowledge\n',
+        theme: "default",
+        mode: "simplemode",
     });
+    policyEditor.setValue(`@Knowledge
+R1 :: a, b implies x;
+R2 :: x implies z | 0;
+R3 :: a, x implies -z | 1;
+R4 :: a, b implies y | 0;
+R5 :: a implies -y | 0;`);
 
     policyEditor.setSize(400, 300);
 
     contextEditor = CodeMirror(contextContainer, {
-    lineNumbers: true,
-    tabSize: 2,
-    gutter: true,
-    theme: "default",
-    mode: "simplemode",
+        lineNumbers: true,
+        tabSize: 2,
+        gutter: true,
+        theme: "default",
+        mode: "simplemode",
     });
+    contextEditor.setValue("a; b;");
 
     contextEditor.setSize(400, 50);
 
     consoleEditor = CodeMirror(consoleContainer, { // TODO Change that to some textarea or so?
-    lineNumbers: true,
-    tabSize: 2,
-    gutter: true,
-    theme: "default",
-    readOnly: true,
+        lineNumbers: true,
+        tabSize: 2,
+        gutter: true,
+        theme: "default",
+        readOnly: true,
     });
 
     consoleEditor.setSize(400, 300);
