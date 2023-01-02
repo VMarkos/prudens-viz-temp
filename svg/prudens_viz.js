@@ -1,7 +1,22 @@
-const DEFEATED_OPACITY = 0.2;
-const POSITIVE_COLOR = "#00ac00";
-const NEGATIVE_COLOR = "#ac0000";
-const DILEMMA_COLOR = "#0000ac";
+const styles = {
+    opacity: {
+        defeatedOpacity: 0.2,
+    },
+    colors: {
+        edges: {
+            positive: "#00ac00",
+            negative: "#ac0000",
+            dilemma: "#0000ac",
+            defeating: "#f0a00c",
+        },
+    },
+}
+
+// const DEFEATED_OPACITY = 0.2;
+// const POSITIVE_COLOR = "#00ac00";
+// const NEGATIVE_COLOR = "#ac0000";
+// const DILEMMA_COLOR = "#0000ac";
+// const DEFEATING_COLOR = "#f0a00c";
 
 function layerAssign(ruleNodeLs, ruleBody, ruleHead, nodeLayer) {
     let ruleId, ruleBodyLiterals, assignedNodes, layerInfo, i;
@@ -112,7 +127,8 @@ function prepareVis(data) {
     }
     // console.log(ruleBody);
     const dilemmas = computeDilemmas(data.dilemmas);
-    return [ruleNodeLs.concat(defeatedRuleNodeLs), ruleBody, ruleHead, nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs, dilemmas];
+    const defeatingEdges = defeatingRules(data.defeatedRules);
+    return [ruleNodeLs.concat(defeatedRuleNodeLs), ruleBody, ruleHead, nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs, dilemmas, defeatingEdges];
 }
 
 function computeDilemmas(dilemmas) {
@@ -165,10 +181,32 @@ function computeDilemmas(dilemmas) {
     };
 }
 
-function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs, dilemmas) {
+function defeatingRules(defeatedRules) {
+    const edges = [];
+    let by, defeated;
+    for (const pair of defeatedRules) {
+        by = pair["by"]["name"];
+        defeated = pair["defeated"]["name"];
+        edges.push([by, defeated]);
+    }
+    return edges;
+}
+
+function edgeIncludes(edges, edge) {
+    let e;
+    for (let i = 0; i < edges.length; i++) {
+        e = edges[i];
+        console.log(e, edge);
+        if (edge[0] === e[0] && edge[1] === e[1]) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs, dilemmas, defeatingRules) {
     // console.log(nodeLayer);
     // debugger;
-    console.log("dilemmas:", dilemmas);
     const G = new jsnx.DiGraph(); // ? rankdir = "LR"
     let nodeLabel, sign, isRule;
     for (const node of Object.keys(nodeLayer)) {
@@ -258,6 +296,11 @@ function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs, dil
             isDefeated: true, // TODO irrelevant?
             isDilemma: true,
         });
+        G.addEdge(edge[1], edge[0], data = {
+            sign: undefined, // TODO irrelevant?
+            isDefeated: true, // TODO irrelevant?
+            isDilemma: true,
+        });
     }
     for (const edge of dilemmas.factEdges) {
         edgeStart = edge[0];
@@ -271,14 +314,32 @@ function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs, dil
             isDilemma: false,
         });
     }
+    // console.log("edges:", G.edges(), G.edges(true));
+    let i;
+    for (const edge of defeatingRules) {
+        i = edgeIncludes(G.edges(), edge);
+        // console.log(i);
+        if (i >= 0) {
+            // console.log("here", G.edges(true)[i]);
+            G.edges(true)[i][2]["isDefeating"] = true;
+            continue;
+        }
+        G.addEdge(edge[0], edge[1], data = {
+            sign: true, // TODO is this relevant?
+            isDefeated: true, // TODO is this relevant?
+            isDilemma: false,
+            isDefeating: true,
+        });
+    }
     jsnx.draw(G, {
         element: "#canvas",
         withLabels: true,
         nodeShape: "rect",
         nodeAttr: graphStyle.nodeAttr,
         weighted: false,
+        stickyDrag: true,
         edgeStyle: {
-            "stroke-width": 5,
+            "stroke-width": graphStyle.strokeWidth,
             "fill": graphStyle.edgeColor,
             "opacity": graphStyle.graphOpacity,
         },
@@ -316,17 +377,25 @@ const graphStyle = {
     },
     graphOpacity: (d) => {
         if (d.data.isDefeated) {
-            return DEFEATED_OPACITY;
+            return styles.opacity.defeatedOpacity;
         }
         return 1.0;
     },
     edgeColor: (d) => {
         if (d.data.isDilemma) {
-            return DILEMMA_COLOR;
+            return styles.colors.edges.dilemma;
+        } else if (d.data.isDefeating) {
+            return styles.colors.edges.defeating;
         } else if (!d.data.sign) {
-            return NEGATIVE_COLOR;
+            return styles.colors.edges.negative;
         }
-        return POSITIVE_COLOR;
+        return styles.colors.edges.positive;
+    },
+    strokeWidth: (d) => {
+        if (d.data.isDilemma) {
+            return 2.5;
+        }
+        return 5;
     },
     edgeOffset: 20,
     nodeAttr: {
@@ -358,5 +427,5 @@ function testGraph() {
     // debugger;
     layerAssign(parsedLogs[0], parsedLogs[1], parsedLogs[2], parsedLogs[3]);
     // console.log(parsedLogs);
-    visPrudens(parsedLogs[3], parsedLogs[4], parsedLogs[5], parsedLogs[6], parsedLogs[7]);
+    visPrudens(parsedLogs[3], parsedLogs[4], parsedLogs[5], parsedLogs[6], parsedLogs[7], parsedLogs[8]);
 }
