@@ -359,7 +359,45 @@ function visPrudens(nodeLayer, edgesLs, defeatedRuleNodeLs, defeatedEdgesLs, dil
         plot.setAttribute("width", gRects[0].width - 20);
         plot.setAttribute("height", gRects[0].height - lRects[0].height);
         plot.setAttribute("opacity", "1");
+        const plotContainer = document.getElementById("canvas");
+        plotContainer.style.border = "1px solid black";
+        loadButtons();
     }, 0);
+}
+
+function loadButtons() {
+    const plotContainer = document.getElementById("canvas");
+    const buttonContainer = document.createElement("div");
+    buttonContainer.classList.add("nav-buttons-container");
+    const plusSearch = document.createElement("i");
+    plusSearch.classList.add("fa", "fa-search-plus");
+    const zoomInButton = createButton(plusSearch, d3Utils.zoomIn);
+    const minusSearch = document.createElement("i");
+    minusSearch.classList.add("fa", "fa-search-minus");
+    const zoomOutButton = createButton(minusSearch);
+    buttonContainer.append(zoomInButton);
+    buttonContainer.append(zoomOutButton);
+    plotContainer.append(buttonContainer);
+}
+
+const d3Utils = {
+    zoomIn: () => {
+        const plotContainer = document.getElementsByClassName("jsnx")[0];
+        console.log("scroll");
+        plotContainer.scrollBy({
+            top: 10,
+            left: 0,
+            behavior: "smooth",
+        });
+    }
+}
+
+function createButton(label, handler) {
+    const button = document.createElement("div");
+    button.classList.add("nav-button");
+    button.append(label);
+    button.addEventListener("click", handler);
+    return button;
 }
 
 function stringifyLiteral(literal) {
