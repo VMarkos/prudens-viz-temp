@@ -156,16 +156,20 @@ const prudens = {
 
 const eventListeners = {
     compile: (event) => {
+        //basically the outObject is the json file we had previously
         const outObject = prudens.infer();
-        const previousConsoleValue = consoleEditor.getValue();
+        // const previousConsoleValue = consoleEditor.getValue();
+        // console.log(outObject["outputObject"])
         if (!outObject["outputObject"]) {
-            consoleEditor.setValue(previousConsoleValue + outObject["outputString"] + "\n~$ ");
+            consoleEditor.setValue("\n~$ ");
+            contextEditor.setValue(" ");
             return;
         }
         // TODO Here you add any functionality regarding graphs.
         // draw.graph();
-        consoleEditor.setValue(previousConsoleValue + outObject["outputString"] + "\n~$ ");
+        consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
         // console.log(outObject);
+        // console.log(outObject["outputObject"]);
         const graphObject = draw.utils.graphify(outObject["outputObject"]);
         // console.log(graphObject);
         const graphable = draw.utils.layering.generateLayeredGraph(graphObject, 100, 100);
