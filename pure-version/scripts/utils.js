@@ -35,6 +35,11 @@ const defaults = {
             },
         },
     },
+    animation: {
+        times: {
+            showDuration: 600,
+        }
+    }
 };
 
 const cm = {
@@ -211,7 +216,11 @@ const draw = {
             .append("g")
             .attr("transform", (d) => { return "translate(" + d.x + "," + d.y + ")"; });
         let circle = eEnter.append("circle")
+            .attr("r", (d) => { return 0; })
+            .transition()
+            .duration(defaults.animation.times.showDuration)
             .attr("r", (d) => { return defaults.shapes.nodes.r; })
+            .style("class", "node-yshift")
             .attr("stroke", "#ac0000")
             .attr("fill", defaults.shapes.nodes.color)
             .attr("stroke-width", 0)
@@ -222,24 +231,32 @@ const draw = {
             .attr("dominant-baseline", "middle")
             .attr("text-anchor", "middle")
             .attr("fill", defaults.shapes.nodes.textColor)
+            .transition()
+            .delay(defaults.animation.times.showDuration)
             .text((d) => { return d.label; });
         svg.append("g")
-            .attr("class", "links")
             .selectAll("line")
             .data(edges)
             .enter()
             .append("line")
             .attr("stroke", defaults.shapes.edges.color)
             .attr("stroke-width", (d) => { return defaults.shapes.edges.strokeWidth; })
-            .attr("opacity", defaults.shapes.edges.opacity)
+            .attr("x1", (d) => { return (d.source.x + d.target.x) / 2; })
+            .attr("y1", (d) => { return (d.source.y + d.target.y) / 2; })
+            .attr("x2", (d) => { return (d.source.x + d.target.x) / 2; })
+            .attr("y2", (d) => { return (d.source.y + d.target.y) / 2; })
+            .attr("opacity", (d) => { return 0.0; })
+            .transition()
+            .duration(defaults.animation.times.showDuration)
             .attr("x1", (d) => { return d.source.x + draw.utils.shorten(d).xshorten; })
             .attr("y1", (d) => { return d.source.y + draw.utils.shorten(d).yshorten; })
             .attr("x2", (d) => { return d.target.x - draw.utils.shorten(d).xshorten; })
             .attr("y2", (d) => { return d.target.y - draw.utils.shorten(d).yshorten; })
+            .attr("opacity", defaults.shapes.edges.opacity)
             .attr("marker-end", (d) => {
                 const color = defaults.shapes.edges.color(d);
                 return draw.utils.addMarker(color, defs);
-            });
+            })
     },
     utils: {
         addMarker: (color, defs) => {
