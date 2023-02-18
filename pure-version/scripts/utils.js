@@ -157,14 +157,14 @@ const prudens = {
 const eventListeners = {
     compile: (event) => {
         const outObject = prudens.infer();
-        const previousConsoleValue = consoleEditor.getValue();
+        // const previousConsoleValue = consoleEditor.getValue();
         if (!outObject["outputObject"]) {
-            consoleEditor.setValue(previousConsoleValue + outObject["outputString"] + "\n~$ ");
+            consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
             return;
         }
         // TODO Here you add any functionality regarding graphs.
         // draw.graph();
-        consoleEditor.setValue(previousConsoleValue + outObject["outputString"] + "\n~$ ");
+        consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
         // console.log(outObject);
         const graphObject = draw.utils.graphify(outObject["outputObject"]);
         // console.log(graphObject);
@@ -177,6 +177,12 @@ const eventListeners = {
 const draw = {
     graph: (nodes, edges) => {
         // console.log(nodes, edges);
+        const svgs = document.getElementsByTagName("svg")
+        if (svgs.length > 0) {
+            for (const svg of svgs) {
+                svg.remove();
+            }
+        }
         const svg = d3.select("#graph-container")
             .append("svg")
             .attr("width", "100%")
