@@ -32,6 +32,19 @@ This version has no external dependencies other than `D3.js` and, of course, Pru
 
 Just write your policy and the corresponding context and hit the "Compile" button.
 
+## Visualization Explanation
+
+| Edge Type | Color          | Description                      |
+| ---       | ---            | ---                              |
+| 0         | None           | No edge                          |
+| 1         | Green (a=1.0)  | Positive inference               |
+| 2         | Red (a=1.0)    | Negative inference               |
+| 3         | Green (a=0.3)  | Positive defeated inference      |
+| 4         | Red (a=0.3)    | negative defeated inference      |
+| 5         | White          | Attack                           |
+| 6         | Orange         | Dilemma                          |
+
+
 ## Limitations / TODOs
 
 - [ ] So far, induced knowledge graphs should be acyclic.
