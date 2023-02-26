@@ -1,65 +1,58 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta charset="UTF-8">
-        <link rel="stylesheet" type="text/css" href="./css/style.css" media="screen"/>
+        <title>Prudens Viz</title>
+        <!-- Styles -->
+        <link rel="stylesheet" href="./css/style.css">
         <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
-
+        <!-- CodeMirror -->
         <script type="text/javascript"
         src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js">
         </script>
+        <script type="text/javascript" src="./scripts/simplemode.js"></script>
+        <script type="text/javascript" src="./scripts/prudensmode.js"></script>
+        <!-- D3 -->
         <script src="https://d3js.org/d3.v3.min.js"></script>
+        <!-- Prudens -->
+        <script type="text/javascript" src="./scripts/prudens/prudensUtils.js"></script>
+        <script type="text/javascript" src="./scripts/prudens/parsers.js"></script>
+        <script type="text/javascript" src="./scripts/prudens/prudens.js"></script>
+        <!-- Utilities -->
+        <script type="text/javascript" src="./scripts/utils.js"></script>
         <script type="text/javascript" src="./scripts/main.js"></script>
-        <script type="text/javascript" src="./scripts/simpleMode.js"></script>
-        <script type="text/javascript" src="./scripts/prudensMode.js"></script>
-        <script type="text/javascript" src="./scripts/parsers.js"></script>
-        <script type="text/javascript" src="./scripts/prudens.js"></script>
-        <script type="text/javascript" src="./scripts/prudensUtils.js"></script>
-        <script type="text/javascript" src="./svg/networkx/networkx.js"></script>
-        <script type="text/javascript" src="./svg/prudens_viz.js"></script>
-        <title>
-            Knowledge Graph Animation &mdash; Mock up
-        </title>
-        <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
     </head>
     <body>
-        <nav id="nav" class="navbar-container">
-            <div class="logo-container">
-                Prudens Viz<span class="comment">(demo)</span>
-            </div>
-            <div class="button-container" onclick="compile()">
-                Compile
-            </div>
-        </nav>
-        <div class="body-container">
-            <div class="body-grid-container">
-                <div class="codeeditor-container policy">
-                    <div class="code-label">Policy</div>
-                    <div id="policy-container" class="codemirror-container">
-                        
+        <div class="navbar-container">
+            Prudens
+        </div>
+        <div class="main-container">
+            <div class="policy-container">
+                <div class="code-container-header top">
+                    <div>
+                        Policy
+                    </div>
+                    <div id="compile-button" class="button compile">
+                        Compile
                     </div>
                 </div>
-                <div class="codeeditor-container context">
-                    <div class="code-label">Context</div>
-                    <div id="context-container" class="codemirror-container">
-                        
-                    </div>
+                <div id="policy-editor-container">
+
                 </div>
-                <div class="codeeditor-container console">
-                    <div class="code-label">Console</div>
-                    <div id="console-container" class="codemirror-container">
-                        
-                    </div>
+                <div class="code-container-header">
+                    Context
                 </div>
-                <div id="gc" class="whole-graph-container">
-                    <div id="graph-label" class="code-label">Animated Graph</div>
-                    <div class="graph-container" id="graph-container">
-                        <div id="canvas" class="canvas-container"></div>
-                    </div>
+                <div id="context-editor-container">
+                    
+                </div>
+                <div class="code-container-header">
+                    Console
+                </div>
+                <div id="console-editor-container">
+                    
                 </div>
             </div>
+            <div id="graph-container"></div>
         </div>
     </body>
 </html>
