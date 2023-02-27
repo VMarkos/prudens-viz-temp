@@ -392,10 +392,22 @@ const draw = {
             generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.longestPathLayering, xshift = 100, yshift = 100) => {
                 const nodes = graphObject["nodes"];
                 const edges = graphObject["edges"];
+                console.log(nodes);
+                // console.log(edges);
                 const nodeObjects = [];
                 const edgeObjects = [];
                 const nodeCoords = {}
-                const layers = layering(edges);
+                // const layers = layering(edges);
+
+                // ['a', 'b', 'x', 'R1', 'z', 'R3', 'y', 'R4', 'R5', 'R2']
+                const layers_rep=[0,0,2,1,4,3,2,1,2,3];
+                const layerCount_rep={0:2,1:2,2:3,4:1,4:1};
+                const layers ={
+                    layers: layers_rep,
+                    layerCounts: layerCount_rep,
+                }
+                // console.log("this is the previous version", layers);
+                // console.log("current version", layers_rep);
                 const seenPerLayer = {};
                 let layer, current;
                 for (let i = 0; i < nodes.length; i++) {
@@ -414,6 +426,7 @@ const draw = {
                             type: graphObject["nodeType"][i],
                         }
                     };
+                    // console.log(current);
                     nodeObjects.push(current);
                     nodeCoords[nodes[i]] = current;
                 }
@@ -440,6 +453,8 @@ const draw = {
                 const layers = []; // 0-indexed layers, L0 is the lowest one, containing all sinks.
                 const layerCounts = {};
                 let layer;
+                // console.log(layerCounts);
+                // console.log(edges);
                 for (let i = 0; i < edges.length; i++) {
                     layer = Math.abs(draw.utils.layering.assignLayerTo(i, edges, edgeTypes));
                     layers.push(layer);
@@ -449,6 +464,8 @@ const draw = {
                         layerCounts[layer] = 1;
                     }
                 }
+                // console.log(layers);
+                // console.log(layerCounts);
                 return {
                     layers: layers,
                     layerCounts: layerCounts,
