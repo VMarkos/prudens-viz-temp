@@ -165,6 +165,7 @@ const eventListeners = {
         // const previousConsoleValue = consoleEditor.getValue();
         if (!outObject["outputObject"]) {
             consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
+            draw.clear();
             return;
         }
         // TODO Here you add any functionality regarding graphs.
@@ -180,14 +181,17 @@ const eventListeners = {
 };
 
 const draw = {
-    graph: (nodes, edges) => {
-        // console.log(nodes, edges);
+    clear: () => {
         const svgs = document.getElementsByTagName("svg")
         if (svgs.length > 0) {
             for (const svg of svgs) {
                 svg.remove();
             }
         }
+    },
+    graph: (nodes, edges) => {
+        // console.log(nodes, edges);
+        draw.clear();
         const svg = d3.select("#graph-container")
             .append("svg")
             .attr("width", "100%")
@@ -400,12 +404,13 @@ const draw = {
                 // const layers = layering(edges);
 
                 // ['a', 'b', 'x', 'R1', 'z', 'R3', 'y', 'R4', 'R5', 'R2']
-                const layers_rep=[0,0,2,1,4,3,2,1,2,3];
-                const layerCount_rep={0:2,1:2,2:3,4:1,4:1};
-                const layers ={
-                    layers: layers_rep,
-                    layerCounts: layerCount_rep,
-                }
+                // const layers_rep=[0,0,2,1,4,3,2,1,2,3];
+                // const layerCount_rep={0:2,1:2,2:3,4:1,4:1};
+                // const layers ={
+                //     layers: layers_rep,
+                //     layerCounts: layerCount_rep,
+                // }
+                const layers = layering(edges)
                 // console.log("this is the previous version", layers);
                 // console.log("current version", layers_rep);
                 const seenPerLayer = {};
