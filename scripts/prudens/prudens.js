@@ -678,7 +678,7 @@ function initializeGraph(context) {
     let literal;
     for (let i = 0; i < context.length; i++) {
         literal = context[i]
-        graph[literalToString(literal)] = [{name: `\$${i}`, head: literal, body: TRUE_PREDICATE}];
+        graph[literalToString(literal)] = [{name: `\$${i}`, head: literal, body: [TRUE_PREDICATE]}];
     }
     return graph;
 }

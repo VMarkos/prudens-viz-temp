@@ -75,9 +75,27 @@ body {
     cursor: pointer;
 }
 
+.button.hidden {
+    opacity: 0.0;
+    transition-duration: 200ms;
+}
+
 #graph-container {
     width: 100%;
     height: auto;
+    position: relative;
+}
+
+.nav-buttons-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.nav-buttons-container:hover .button.hidden {
+    opacity: 1.0;
 }
 
 .node-yshift {

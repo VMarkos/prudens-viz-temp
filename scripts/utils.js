@@ -42,6 +42,10 @@ const defaults = {
     }
 };
 
+const global = {
+    logCount: 0,
+};
+
 const cm = {
     init: (container, width, height, params) => {
         editor = CodeMirror(container, params);
@@ -95,6 +99,7 @@ const init = {
     },
     attachEventListeners: () => {
         document.getElementById("compile-button").addEventListener("click", eventListeners.compile);
+        document.getElementById("next-button").addEventListener("click", eventListeners.next);
     },
 };
 
@@ -135,7 +140,7 @@ const prudens = {
     utils: {
         inContext: (literal, context) => { // `literal` is string while `context` contains objects.
             for (const item of context) {
-                if (item["name"] === literal) {
+                if (prudens.utils.stringifyLiteral(item) === literal) {
                     return true;
                 }
             }
@@ -177,7 +182,32 @@ const eventListeners = {
         const graphable = draw.utils.layering.generateLayeredGraph(graphObject, 100, 100);
         // console.log(graphable);
         draw.graph(graphable["nodes"], graphable["edges"]);
-    }
+    },
+    next: (event) => {
+        const outObject = prudens.infer();
+        console.log(outObject);
+        if (!outObject["outputObject"]) {
+            consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
+            draw.clear();
+            return;
+        }
+        consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
+        let tempOutput, tempGraphObject, graphable;
+        const logs = outObject["outputObject"]["logs"];
+        if (global.logCount > logs.length - 1) {
+            global.logCount = 0;
+        }
+        log = logs[global.logCount];
+        tempOutput = {};
+        for (const key in log) {
+            tempOutput[key] = log[key];
+        }
+        tempOutput["context"] = outObject["outputObject"]["context"];
+        tempGraphObject = draw.utils.graphify(tempOutput);
+        graphable = draw.utils.layering.generateLayeredGraph(tempGraphObject, 100, 100);
+        draw.graph(graphable["nodes"], graphable["edges"]);
+        global.logCount++;
+    },
 };
 
 const draw = {
@@ -293,6 +323,7 @@ const draw = {
             };
         },
         graphify: (prudensOutput) => {
+            // console.log("out:", prudensOutput);
             const graph = prudensOutput["graph"];
             const context = prudensOutput["context"];
             const defeatedRules = prudensOutput["defeatedRules"];
@@ -366,7 +397,8 @@ const draw = {
                 edges = draw.utils.addEdgeRow(edges);
             }
             edges[ruleIndex][headIndex] = defeated ? (rule["head"]["sign"] ? 3 : 4) : (rule["head"]["sign"] ? 1 : 2);
-            // console.log(rule["name"], "\n\r", utils.matToString(edges));
+            // console.log(rule["name"], "\n", utils.matToString(edges));
+            // console.log("ruleBody:", ruleBody);
             for (const bodyLiteral of ruleBody) {
                 bodyIndex = draw.utils.addLiteralNode(prudens.utils.stringifyLiteral(bodyLiteral), context, nodes, edges, nodeType, sign);
                 edges[bodyIndex][ruleIndex] = defeated ? (bodyLiteral["sign"] ? 3 : 4) : (bodyLiteral["sign"] ? 1 : 2);
