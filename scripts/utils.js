@@ -44,6 +44,12 @@ const defaults = {
 
 const global = {
     logCount: 0,
+    flashedNodes: [],
+    outObject: {},
+    reset: () => {
+        global.logCount = 0;
+        global.flashedNodes = [];
+    },
 };
 
 const cm = {
@@ -99,7 +105,8 @@ const init = {
     },
     attachEventListeners: () => {
         document.getElementById("compile-button").addEventListener("click", eventListeners.compile);
-        document.getElementById("next-button").addEventListener("click", eventListeners.next);
+        document.getElementById("next-button").addEventListener("click", eventListeners.updateGraph);
+        // document.getElementById("previous-button").addEventListener("click", eventListeners.updateGraph);
     },
 };
 
@@ -166,26 +173,31 @@ const prudens = {
 
 const eventListeners = {
     compile: (event) => {
+        global.reset();
         const outObject = prudens.infer();
-        // const previousConsoleValue = consoleEditor.getValue();
         if (!outObject["outputObject"]) {
             consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
             draw.clear();
             return;
         }
-        // TODO Here you add any functionality regarding graphs.
-        // draw.graph();
         consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
-        // console.log(outObject);
         const graphObject = draw.utils.graphify(outObject["outputObject"]);
-        // console.log(graphObject);
         const graphable = draw.utils.layering.generateLayeredGraph(graphObject, 100, 100);
-        // console.log(graphable);
+        
         draw.graph(graphable["nodes"], graphable["edges"]);
     },
-    next: (event) => {
+    updateGraph: (event) => {
+        if (document.getElementsByTagName("svg").length === 0) {
+            eventListeners.compile(event);
+            return;
+        }
+        let step;
+        if (event.target.id === "next-button") {
+            step = 1;
+        } else {
+            step = -1;
+        }
         const outObject = prudens.infer();
-        console.log(outObject);
         if (!outObject["outputObject"]) {
             consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
             draw.clear();
@@ -194,10 +206,16 @@ const eventListeners = {
         consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
         let tempOutput, tempGraphObject, graphable;
         const logs = outObject["outputObject"]["logs"];
-        if (global.logCount > logs.length - 1) {
-            global.logCount = 0;
+        if (step === 1 && global.logCount === logs.length - 1) {
+            draw.clear();
+            eventListeners.compile(event);
+            return;
         }
-        log = logs[global.logCount];
+        if (step === -1 && global.logCount === -1) {
+            global.logCount = logs.length - 1;
+            return;
+        }
+        const log = logs[global.logCount];
         tempOutput = {};
         for (const key in log) {
             tempOutput[key] = log[key];
@@ -205,8 +223,30 @@ const eventListeners = {
         tempOutput["context"] = outObject["outputObject"]["context"];
         tempGraphObject = draw.utils.graphify(tempOutput);
         graphable = draw.utils.layering.generateLayeredGraph(tempGraphObject, 100, 100);
-        draw.graph(graphable["nodes"], graphable["edges"]);
-        global.logCount++;
+        console.log(global.logCount);
+        draw.update(graphable["nodes"], graphable["edges"], step);
+        global.logCount += step;
+    },
+};
+
+const animate = {
+    nodes: {
+        flash: (element, startOpacity, endOpacity) => {
+            if (global.flashedNodes.includes(element[0][0].id)) {
+                return;
+            }
+            element.attr("opacity", startOpacity)
+                .transition()
+                .duration(defaults.animation.times.showDuration / 3)
+                .attr("opacity", endOpacity)
+                .transition()
+                .duration(defaults.animation.times.showDuration / 3)
+                .attr("opacity", startOpacity)
+                .transition()
+                .duration(defaults.animation.times.showDuration / 3)
+                .attr("opacity", endOpacity);
+            global.flashedNodes.push(element[0][0].id);
+        },
     },
 };
 
@@ -219,8 +259,27 @@ const draw = {
             }
         }
     },
+    update: (nodes, edges, step) => {
+        let circle, nodeText, line, startOpacity, endOpacity;
+        if (step === 1) {
+            startOpacity = 0.3;
+            endOpacity = defaults.shapes.nodes.opacity;
+        } else {
+            startOpacity = defaults.shapes.nodes.opacity;
+            endOpacity = 0.3;
+        }
+        for (const node of nodes) {
+            circle = d3.select("#" + node.label);
+            animate.nodes.flash(circle, startOpacity, endOpacity);
+            nodeText = d3.select("#" + node.label + "-text");
+            animate.nodes.flash(nodeText, startOpacity, endOpacity);
+        }
+        for (const edge of edges) {
+            line = d3.select("#" + edge.source.label + "-" + edge.target.label)
+                .attr("opacity", defaults.shapes.edges.opacity);
+        }
+    },
     graph: (nodes, edges) => {
-        // console.log(nodes, edges);
         draw.clear();
         const svg = d3.select("#graph-container")
             .append("svg")
@@ -250,21 +309,23 @@ const draw = {
             .append("g")
             .attr("transform", (d) => { return "translate(" + d.x + "," + d.y + ")"; });
         let circle = eEnter.append("circle")
+            .attr("id", (d) => { return d.label; })
             .attr("r", (d) => { return 0; })
             .transition()
             .duration(defaults.animation.times.showDuration)
             .attr("r", (d) => { return defaults.shapes.nodes.r; })
-            .style("class", "node-yshift")
             .attr("stroke", "#ac0000")
             .attr("fill", defaults.shapes.nodes.color)
             .attr("stroke-width", 0)
-            .attr("opacity", defaults.shapes.nodes.opacity)
+            .attr("opacity", 0.3)
             .attr("filter", "url(#drop-shadow)");
         eEnter.append("text")
+            .attr("id", (d) => { return d.label + "-text"; })
             .attr("alignment-baseline", "middle")
             .attr("dominant-baseline", "middle")
             .attr("text-anchor", "middle")
             .attr("fill", defaults.shapes.nodes.textColor)
+            .attr("opacity", 0.3)
             .transition()
             .delay(defaults.animation.times.showDuration)
             .text((d) => { return d.label; });
@@ -273,6 +334,7 @@ const draw = {
             .data(edges)
             .enter()
             .append("line")
+            .attr("id", (d) => { return d.source.label + "-" + d.target.label; })
             .attr("stroke", defaults.shapes.edges.color)
             .attr("stroke-width", (d) => { return defaults.shapes.edges.strokeWidth; })
             .attr("x1", (d) => { return (d.source.x + d.target.x) / 2; })
@@ -286,7 +348,8 @@ const draw = {
             .attr("y1", (d) => { return d.source.y + draw.utils.shorten(d).yshorten; })
             .attr("x2", (d) => { return d.target.x - draw.utils.shorten(d).xshorten; })
             .attr("y2", (d) => { return d.target.y - draw.utils.shorten(d).yshorten; })
-            .attr("opacity", defaults.shapes.edges.opacity)
+            // .attr("opacity", defaults.shapes.edges.opacity)
+            .attr("opacity", 0.3)
             .attr("marker-end", (d) => {
                 const color = defaults.shapes.edges.color(d);
                 return draw.utils.addMarker(color, defs);

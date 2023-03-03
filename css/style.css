@@ -97,8 +97,3 @@ body {
 .nav-buttons-container:hover .button.hidden {
     opacity: 1.0;
 }
-
-.node-yshift {
-    transition: translateY(-10%);
-    transition-duration: 500ms;
-}
