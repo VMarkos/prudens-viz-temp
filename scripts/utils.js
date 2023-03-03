@@ -286,6 +286,19 @@ const draw = {
             .attr("width", "100%")
             .attr("height", "100%");
         const defs = svg.append("defs");
+        draw.initFilters(defs);
+        let e = svg.selectAll("g")
+            .data(nodes);
+        let eEnter = e.enter().append("g");
+        draw.addNodes(eEnter);
+        draw.addNodeLabels(eEnter);
+        const edgeList = svg.append("g")
+            .selectAll("line")
+            .data(edges)
+            .enter()
+        draw.addEdges(edgeList, defs);
+    },
+    initFilters: (defs) => {
         const filter = defs.append("svg:filter")
             .attr("id", "drop-shadow")
         filter.append("feGaussianBlur")
@@ -302,13 +315,10 @@ const draw = {
             .attr("in", "offsetBlur");
         feMerge.append("feMergeNode")
             .attr("in", "SourceGraphic");
-
-        let e = svg.selectAll("g")
-            .data(nodes);
-        let eEnter = e.enter()
-            .append("g")
-            .attr("transform", (d) => { return "translate(" + d.x + "," + d.y + ")"; });
-        let circle = eEnter.append("circle")
+    },
+    addNodes: (eEnter) => {
+        eEnter.attr("transform", (d) => { return "translate(" + d.x + "," + d.y + ")"; })
+            .append("circle")
             .attr("id", (d) => { return d.label; })
             .attr("r", (d) => { return 0; })
             .transition()
@@ -319,6 +329,8 @@ const draw = {
             .attr("stroke-width", 0)
             .attr("opacity", 0.3)
             .attr("filter", "url(#drop-shadow)");
+    },
+    addNodeLabels: (eEnter) => {
         eEnter.append("text")
             .attr("id", (d) => { return d.label + "-text"; })
             .attr("alignment-baseline", "middle")
@@ -329,11 +341,9 @@ const draw = {
             .transition()
             .delay(defaults.animation.times.showDuration)
             .text((d) => { return d.label; });
-        svg.append("g")
-            .selectAll("line")
-            .data(edges)
-            .enter()
-            .append("line")
+    },
+    addEdges: (edges, defs) => {
+        edges.append("line")
             .attr("id", (d) => { return d.source.label + "-" + d.target.label; })
             .attr("stroke", defaults.shapes.edges.color)
             .attr("stroke-width", (d) => { return defaults.shapes.edges.strokeWidth; })
@@ -348,12 +358,11 @@ const draw = {
             .attr("y1", (d) => { return d.source.y + draw.utils.shorten(d).yshorten; })
             .attr("x2", (d) => { return d.target.x - draw.utils.shorten(d).xshorten; })
             .attr("y2", (d) => { return d.target.y - draw.utils.shorten(d).yshorten; })
-            // .attr("opacity", defaults.shapes.edges.opacity)
             .attr("opacity", 0.3)
             .attr("marker-end", (d) => {
                 const color = defaults.shapes.edges.color(d);
                 return draw.utils.addMarker(color, defs);
-            })
+            });
     },
     utils: {
         addMarker: (color, defs) => {
