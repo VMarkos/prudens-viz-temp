@@ -115,7 +115,7 @@ const prudens = {
             return {
                 outputObject: undefined,
                 outputString: "ERROR: " + contextObject["name"] + ":\n" + contextObject["message"],
-        };
+            };
         }
         const output = forwardChaining(kbObject, contextObject["context"]);
         const inferences = output["facts"];
@@ -389,23 +389,26 @@ const draw = {
             return index;
         },
         layering: {
-            generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.longestPathLayering, xshift = 100, yshift = 100) => {
+            generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.DotLayering, xshift = 100, yshift = 100) => {
                 const nodes = graphObject["nodes"];
                 const edges = graphObject["edges"];
-                console.log(nodes);
+                // console.log(nodes);
                 // console.log(edges);
+
                 const nodeObjects = [];
                 const edgeObjects = [];
                 const nodeCoords = {}
-                // const layers = layering(edges);
+                const layers = layering(nodes, edges);
+                console.log(layers);
+                // console.log(edges);
 
                 // ['a', 'b', 'x', 'R1', 'z', 'R3', 'y', 'R4', 'R5', 'R2']
-                const layers_rep=[0,0,2,1,4,3,2,1,2,3];
-                const layerCount_rep={0:2,1:2,2:3,4:1,4:1};
-                const layers ={
-                    layers: layers_rep,
-                    layerCounts: layerCount_rep,
-                }
+                // const layers_rep=[0,0,2,1,4,3,2,1,1,3];
+                // const layerCount_rep={0:2,1:3,2:2,4:1,4:1};
+                // const layers ={
+                //     layers: layers_rep,
+                //     layerCounts: layerCount_rep,
+                // }
                 // console.log("this is the previous version", layers);
                 // console.log("current version", layers_rep);
                 const seenPerLayer = {};
@@ -448,40 +451,88 @@ const draw = {
                     edges: edgeObjects,
                 };
             },
-            longestPathLayering: (edges) => { // Assuming that the graph is acyclic.
-                const edgeTypes = [1, 2, 3, 4]; // What type of edges to consider when looking for sinks and longest paths.
-                const layers = []; // 0-indexed layers, L0 is the lowest one, containing all sinks.
-                const layerCounts = {};
-                let layer;
-                // console.log(layerCounts);
-                // console.log(edges);
+            // longestPathLayering: (edges) => { // Assuming that the graph is acyclic.
+            //     const edgeTypes = [1, 2, 3, 4]; // What type of edges to consider when looking for sinks and longest paths.
+            //     const layers = []; // 0-indexed layers, L0 is the lowest one, containing all sinks.
+            //     const layerCounts = {};
+            //     let layer;
+            //     // console.log(layerCounts);
+            //     // console.log(edges);
+            //     for (let i = 0; i < edges.length; i++) {
+            //         layer = Math.abs(draw.utils.layering.assignLayerTo(i, edges, edgeTypes));
+            //         layers.push(layer);
+            //         if (Object.keys(layerCounts).includes("" + layer)) {
+            //             layerCounts[layer] += 1;
+            //         } else {
+            //             layerCounts[layer] = 1;
+            //         }
+            //     }
+            //     // console.log(layers);
+            //     // console.log(layerCounts);
+            //     console.log(edgeTypes);
+            //     return {
+            //         layers: layers,
+            //         layerCounts: layerCounts,
+            //     };
+            // },
+            // assignLayerTo: (node, edges, edgeTypes) => { // node is an index, not the node label.
+            //     const sinks = draw.utils.graph.findSinks(edges, edgeTypes);
+            //     const longestPaths = draw.utils.graph.shortestPaths(edges, node, flip = -1, edgeTypes = edgeTypes);
+            //     let maxDist = -Infinity;
+            //     for (const sink of sinks) {
+            //         if (longestPaths["d"][sink] !== Infinity && longestPaths["d"][sink] > maxDist) {
+            //             maxDist = longestPaths["d"][sink];
+            //         }
+            //     }
+            //     return maxDist;
+            // },
+            DotLayering: (nodes, edges) => {
+                let dotGraph = "digraph {\n";
+                nodes.forEach(node => {
+                    dotGraph += `  "${node}";\n`;
+                });
                 for (let i = 0; i < edges.length; i++) {
-                    layer = Math.abs(draw.utils.layering.assignLayerTo(i, edges, edgeTypes));
-                    layers.push(layer);
-                    if (Object.keys(layerCounts).includes("" + layer)) {
-                        layerCounts[layer] += 1;
-                    } else {
-                        layerCounts[layer] = 1;
+                    for (let j = 0; j < edges[i].length; j++) {
+                        const weight = edges[i][j];
+                        if (weight !== 0) {
+                            dotGraph += `  "${nodes[i]}" -> "${nodes[j]}" [weight=${weight}];\n`;
+                        }
                     }
                 }
-                // console.log(layers);
-                // console.log(layerCounts);
-                return {
-                    layers: layers,
-                    layerCounts: layerCounts,
+                dotGraph += "}\n";
+
+                // Define the Graphviz settings
+                const vizSettings = {
+                    engine: "dot",
+                    format: "json",
+                    files: [
+                        { path: "graph.dot", data: dotGraph }
+                    ]
                 };
+                // Render the graph using Graphviz DOT and extract the node layer information
+                const viz = new Viz({ workerURL: "scripts/viz.js" });
+                viz.renderString(JSON.stringify(vizSettings))
+                    .then(layoutData => {
+                        const layerCounts = getNodeLayerCounts(layoutData);
+                        console.log(layerCounts);
+                    });
             },
-            assignLayerTo: (node, edges, edgeTypes) => { // node is an index, not the node label.
-                const sinks = draw.utils.graph.findSinks(edges, edgeTypes);
-                const longestPaths = draw.utils.graph.shortestPaths(edges, node, flip = -1, edgeTypes = edgeTypes);
-                let maxDist = -Infinity;
-                for (const sink of sinks) {
-                    if (longestPaths["d"][sink] !== Infinity && longestPaths["d"][sink] > maxDist) {
-                        maxDist = longestPaths["d"][sink];
+            getNodeLayerCounts: (layoutData) => {
+                const graph = JSON.parse(layoutData)[0];
+                const layerCounts = {};
+                graph.objects.forEach(object => {
+                    if (object.type === "node") {
+                        const layer = object.attributes.layer;
+                        if (layerCounts[layer] === undefined) {
+                            layerCounts[layer] = 1;
+                        } else {
+                            layerCounts[layer]++;
+                        }
                     }
-                }
-                return maxDist;
-            },
+                });
+                return layerCounts;
+            }
+
         },
         graph: {
             findSinks: (edges, edgeTypes = [1, 2, 3, 4, 5, 6]) => { // Sinks are all nodes with no outgoing edges.
