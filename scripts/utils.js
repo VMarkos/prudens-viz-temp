@@ -223,7 +223,7 @@ const eventListeners = {
         tempOutput["context"] = outObject["outputObject"]["context"];
         tempGraphObject = draw.utils.graphify(tempOutput);
         graphable = draw.utils.layering.generateLayeredGraph(tempGraphObject, 100, 100);
-        console.log(global.logCount);
+        // console.log(global.logCount);
         draw.update(graphable["nodes"], graphable["edges"], step);
         global.logCount += step;
     },
@@ -505,18 +505,8 @@ const draw = {
                 const nodeObjects = [];
                 const edgeObjects = [];
                 const nodeCoords = {}
-                // const layers = layering(edges);
-
-                // ['a', 'b', 'x', 'R1', 'z', 'R3', 'y', 'R4', 'R5', 'R2']
-                // const layers_rep=[0,0,2,1,4,3,2,1,2,3];
-                // const layerCount_rep={0:2,1:2,2:3,4:1,4:1};
-                // const layers ={
-                //     layers: layers_rep,
-                //     layerCounts: layerCount_rep,
-                // }
                 const layers = layering(edges)
-                // console.log("this is the previous version", layers);
-                // console.log("current version", layers_rep);
+                console.log("layers:", layers);
                 const seenPerLayer = {};
                 let layer, current;
                 for (let i = 0; i < nodes.length; i++) {
@@ -592,7 +582,46 @@ const draw = {
                 return maxDist;
             },
         },
+        crossings: {
+            reduce: () => {}, // TODO Implement a generic two-layer cross reduction algorithm.
+            barycenterMethod: (layer1, layer2, edges) => {
+                const ordinals = {}; // { node: ordinal }
+                let neighbours, newOrdinal;
+                for (const node of layer2) {
+                    neighbours = draw.utils.graph.neighbours(node, edges);
+                    newOrdinal = 0;
+                    for (const neighbour of neighbours) {
+                        newOrdinal += layer1.indexOf(neighbour);
+                    }
+                    ordinals[node] = newOrdinal / neighbours.length;
+                }
+                layer2.sort((a, b) => {
+                    return ordinals[b] - ordinals[a];
+                });
+                return layer2;
+            },
+            reverseLayers: (layers) => {
+                const reversedLayers = {};
+                for (let i = 0; i < layers.length; i++) {
+                    if (Object.keys(reversedLayers).includes(layers[i])) {
+                        reversedLayers[layers[i]].push(i);
+                    } else {
+                        reversedLayers[layers[i]] = [i];
+                    }
+                }
+                return reversedLayers;
+            },
+        },
         graph: {
+            neighbours: (node, edges, edgeTypes = [1, 2, 3, 4, 5]) => {
+                const neighbours = [];
+                for (let i = 0; i < edges[node].length; i++) {
+                    if (edgeTypes.includes(edges[node][i])) {
+                        neighbours.push(i);
+                    }
+                }
+                return neighbours;
+            },
             findSinks: (edges, edgeTypes = [1, 2, 3, 4, 5, 6]) => { // Sinks are all nodes with no outgoing edges.
                 const sinks = [];
                 let j;
