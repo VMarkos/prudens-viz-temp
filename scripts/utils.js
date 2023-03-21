@@ -500,16 +500,21 @@ const draw = {
             generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.longestPathLayering, xshift = 100, yshift = 100) => {
                 const nodes = graphObject["nodes"];
                 const edges = graphObject["edges"];
-                console.log(nodes);
+                // console.log(nodes);
                 // console.log(edges);
                 const nodeObjects = [];
                 const edgeObjects = [];
                 const nodeCoords = {}
-                const layers = layering(edges)
-                console.log("layers:", layers);
+                let layers = layering(edges)
+                // console.log("layers (before):", layers);
+                const shuffledLayers = draw.utils.crossings.reduce(edges, layers["layers"]);
+                // const shuffledLayers = [ 4, 6, 5, 7, 8, 9, 2, 0, 1, 3 ];
+                // console.log("layers (after):", shuffledLayers);
                 const seenPerLayer = {};
-                let layer, current;
-                for (let i = 0; i < nodes.length; i++) {
+                let layer, current, i;
+                // for (let i = 0; i < nodes.length; i++) {
+                for (let j = 0; j < shuffledLayers.length; j++) {
+                    i = shuffledLayers[j];
                     layer = layers["layers"][i];
                     if (Object.keys(seenPerLayer).includes("" + layer)) {
                         seenPerLayer[layer] += 1;
@@ -583,10 +588,25 @@ const draw = {
             },
         },
         crossings: {
-            reduce: () => {}, // TODO Implement a generic two-layer cross reduction algorithm.
+            reduce: (edges, layers, reductionMethod = draw.utils.crossings.barycenterMethod) => {
+                const reversedLayers = draw.utils.crossings.reverseLayers(layers);
+                // console.log(reversedLayers);
+                let layer1, layer2, i = 0, step = 1;
+                console.log(i, reversedLayers.length);
+                while (i < Object.values(reversedLayers).length - 1) { // FIXME This is a single pass method, thus,non-optimal.
+                    layer1 = reversedLayers[i];
+                    layer2 = reversedLayers[i + step];
+                    console.log(layer2);
+                    reversedLayers[i + step] = reductionMethod(layer1, layer2, edges);
+                    i += step;
+                }
+                // console.log(reversedLayers);
+                return draw.utils.crossings.concatLayers(reversedLayers);
+            },
             barycenterMethod: (layer1, layer2, edges) => {
                 const ordinals = {}; // { node: ordinal }
                 let neighbours, newOrdinal;
+                console.log(layer2);
                 for (const node of layer2) {
                     neighbours = draw.utils.graph.neighbours(node, edges);
                     newOrdinal = 0;
@@ -595,6 +615,7 @@ const draw = {
                     }
                     ordinals[node] = newOrdinal / neighbours.length;
                 }
+                // console.log("layer2:", layer2);
                 layer2.sort((a, b) => {
                     return ordinals[b] - ordinals[a];
                 });
@@ -603,13 +624,22 @@ const draw = {
             reverseLayers: (layers) => {
                 const reversedLayers = {};
                 for (let i = 0; i < layers.length; i++) {
-                    if (Object.keys(reversedLayers).includes(layers[i])) {
+                    if (Object.keys(reversedLayers).includes("" + layers[i])) {
                         reversedLayers[layers[i]].push(i);
                     } else {
                         reversedLayers[layers[i]] = [i];
                     }
                 }
                 return reversedLayers;
+            },
+            concatLayers: (layers) => {
+                let concatLayers = [];
+                for (const layer of Object.values(layers)) {
+                    // console.log("layer:", layer);
+                    concatLayers = concatLayers.concat(layer);
+                }
+                // console.log(concatLayers);
+                return concatLayers;
             },
         },
         graph: {
