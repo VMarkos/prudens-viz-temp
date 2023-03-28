@@ -45,6 +45,10 @@ Just write your policy and the corresponding context and hit the "Compile" butto
 | 6         | Orange         | Dilemma                          |
 
 
+## Using GraphViz
+
+In this version, we are using [d3-graphviz](https://github.com/magjac/d3-graphviz#d3_graphviz) to render the desired graph. Changes correspond to [./scripts/utils.js](./scripts/utils.js) and specifically to [lines 177-178](./scripts/utils.js#L177) and the newly introduced [graphVizGraph()](./scripts/utils.js#L185) function. The latter accepts a DOT string as an argument and renders the corresponding plot on the same part of the page where the previous version did.
+
 ## Limitations / TODOs
 
 - [ ] So far, induced knowledge graphs should be acyclic.

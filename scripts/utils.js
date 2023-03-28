@@ -115,7 +115,7 @@ const prudens = {
             return {
                 outputObject: undefined,
                 outputString: "ERROR: " + contextObject["name"] + ":\n" + contextObject["message"],
-        };
+            };
         }
         const output = forwardChaining(kbObject, contextObject["context"]);
         const inferences = output["facts"];
@@ -171,15 +171,22 @@ const eventListeners = {
         // draw.graph();
         consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
         // console.log(outObject);
-        const graphObject = draw.utils.graphify(outObject["outputObject"]);
+        // const graphObject = draw.utils.graphify(outObject["outputObject"]);
         // console.log(graphObject);
-        const graphable = draw.utils.layering.generateLayeredGraph(graphObject, 100, 100);
+        // const graphable = draw.utils.layering.generateLayeredGraph(graphObject, 100, 100);
+        const dotString = "digraph  {a -> b}";
+        draw.graphVizGraph(dotString);
         // console.log(graphable);
-        draw.graph(graphable["nodes"], graphable["edges"]);
+        // draw.graph(graphable["nodes"], graphable["edges"]);
     }
 };
 
 const draw = {
+    graphVizGraph: (dotString) => {
+        d3.select("#graph-container")
+            .graphviz()
+            .renderDot(dotString);
+    },
     graph: (nodes, edges) => {
         // console.log(nodes, edges);
         const svgs = document.getElementsByTagName("svg")
@@ -392,20 +399,23 @@ const draw = {
             generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.longestPathLayering, xshift = 100, yshift = 100) => {
                 const nodes = graphObject["nodes"];
                 const edges = graphObject["edges"];
-                console.log(nodes);
+                // console.log(nodes);
                 // console.log(edges);
+
                 const nodeObjects = [];
                 const edgeObjects = [];
                 const nodeCoords = {}
-                // const layers = layering(edges);
+                const layers = layering(nodes, edges);
+                console.log(layers);
+                // console.log(edges);
 
                 // ['a', 'b', 'x', 'R1', 'z', 'R3', 'y', 'R4', 'R5', 'R2']
-                const layers_rep=[0,0,2,1,4,3,2,1,2,3];
-                const layerCount_rep={0:2,1:2,2:3,4:1,4:1};
-                const layers ={
-                    layers: layers_rep,
-                    layerCounts: layerCount_rep,
-                }
+                // const layers_rep=[0,0,2,1,4,3,2,1,1,3];
+                // const layerCount_rep={0:2,1:3,2:2,4:1,4:1};
+                // const layers ={
+                //     layers: layers_rep,
+                //     layerCounts: layerCount_rep,
+                // }
                 // console.log("this is the previous version", layers);
                 // console.log("current version", layers_rep);
                 const seenPerLayer = {};
@@ -466,6 +476,7 @@ const draw = {
                 }
                 // console.log(layers);
                 // console.log(layerCounts);
+                console.log(edgeTypes);
                 return {
                     layers: layers,
                     layerCounts: layerCounts,
@@ -482,6 +493,53 @@ const draw = {
                 }
                 return maxDist;
             },
+            DotLayering: (nodes, edges) => {
+                let dotGraph = "digraph {\n";
+                nodes.forEach(node => {
+                    dotGraph += `  "${node}";\n`;
+                });
+                for (let i = 0; i < edges.length; i++) {
+                    for (let j = 0; j < edges[i].length; j++) {
+                        const weight = edges[i][j];
+                        if (weight !== 0) {
+                            dotGraph += `  "${nodes[i]}" -> "${nodes[j]}" [weight=${weight}];\n`;
+                        }
+                    }
+                }
+                dotGraph += "}\n";
+
+                // Define the Graphviz settings
+                // const vizSettings = {
+                //     engine: "dot",
+                //     format: "json",
+                //     files: [
+                //         { path: "graph.dot", data: dotGraph }
+                //     ]
+                // };
+                // // Render the graph using Graphviz DOT and extract the node layer information
+                // const viz = new Viz({ workerURL: "scripts/viz.js" });
+                // viz.renderString(JSON.stringify(vizSettings))
+                //     .then(layoutData => {
+                //         const layerCounts = getNodeLayerCounts(layoutData);
+                //         console.log(layerCounts);
+                //     });
+            },
+            getNodeLayerCounts: (layoutData) => {
+                const graph = JSON.parse(layoutData)[0];
+                const layerCounts = {};
+                graph.objects.forEach(object => {
+                    if (object.type === "node") {
+                        const layer = object.attributes.layer;
+                        if (layerCounts[layer] === undefined) {
+                            layerCounts[layer] = 1;
+                        } else {
+                            layerCounts[layer]++;
+                        }
+                    }
+                });
+                return layerCounts;
+            }
+
         },
         graph: {
             findSinks: (edges, edgeTypes = [1, 2, 3, 4, 5, 6]) => { // Sinks are all nodes with no outgoing edges.
