@@ -115,7 +115,7 @@ const prudens = {
             return {
                 outputObject: undefined,
                 outputString: "ERROR: " + contextObject["name"] + ":\n" + contextObject["message"],
-        };
+            };
         }
         const output = forwardChaining(kbObject, contextObject["context"]);
         const inferences = output["facts"];
