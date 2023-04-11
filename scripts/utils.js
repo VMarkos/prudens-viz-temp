@@ -389,25 +389,14 @@ const draw = {
             return index;
         },
         layering: {
-            generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.longestPathLayering, xshift = 100, yshift = 100) => {
+            generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.computeLayersAndNodeCounts, xshift = 100, yshift = 100) => {
                 const nodes = graphObject["nodes"];
                 const edges = graphObject["edges"];
-                console.log(nodes);
-                // console.log(edges);
                 const nodeObjects = [];
                 const edgeObjects = [];
                 const nodeCoords = {}
-                // const layers = layering(edges);
+                const layers = layering(nodes, edges);
 
-                // ['a', 'b', 'x', 'R1', 'z', 'R3', 'y', 'R4', 'R5', 'R2']
-                const layers_rep=[0,0,2,1,4,3,2,1,2,3];
-                const layerCount_rep={0:2,1:2,2:3,4:1,4:1};
-                const layers ={
-                    layers: layers_rep,
-                    layerCounts: layerCount_rep,
-                }
-                // console.log("this is the previous version", layers);
-                // console.log("current version", layers_rep);
                 const seenPerLayer = {};
                 let layer, current;
                 for (let i = 0; i < nodes.length; i++) {
@@ -448,40 +437,72 @@ const draw = {
                     edges: edgeObjects,
                 };
             },
-            longestPathLayering: (edges) => { // Assuming that the graph is acyclic.
-                const edgeTypes = [1, 2, 3, 4]; // What type of edges to consider when looking for sinks and longest paths.
-                const layers = []; // 0-indexed layers, L0 is the lowest one, containing all sinks.
-                const layerCounts = {};
-                let layer;
-                // console.log(layerCounts);
-                // console.log(edges);
+            computeLayersAndNodeCounts: (nodes, edges) => {
+                const graph = new dagre.graphlib.Graph();
+                graph.setGraph({});
+              
+                nodes.forEach(node => {
+                  graph.setNode(node, { label: node, width: 50, height: 50 });
+                });
+              
                 for (let i = 0; i < edges.length; i++) {
-                    layer = Math.abs(draw.utils.layering.assignLayerTo(i, edges, edgeTypes));
-                    layers.push(layer);
-                    if (Object.keys(layerCounts).includes("" + layer)) {
-                        layerCounts[layer] += 1;
-                    } else {
-                        layerCounts[layer] = 1;
+                  for (let j = 0; j < edges[i].length; j++) {
+                    if (i !== j && edges[i][j] !== 0) {
+                      graph.setEdge(nodes[i], nodes[j], { label: edges[i][j] });
                     }
+                  }
                 }
-                // console.log(layers);
-                // console.log(layerCounts);
+              
+                dagre.layout(graph);
+              
+                const layers = nodes.map(node => graph.node(node).y);
+                const layerCoordinates = new Set(layers);
+                const layerNumbers = layers.map(y => [...layerCoordinates].sort((a, b) => a - b).indexOf(y) + 1);
+              
+                const layerCounts = {};
+                layerNumbers.forEach(layer => {
+                  layerCounts[layer] = (layerCounts[layer] || 0) + 1;
+                });
+              
                 return {
-                    layers: layers,
-                    layerCounts: layerCounts,
-                };
-            },
-            assignLayerTo: (node, edges, edgeTypes) => { // node is an index, not the node label.
-                const sinks = draw.utils.graph.findSinks(edges, edgeTypes);
-                const longestPaths = draw.utils.graph.shortestPaths(edges, node, flip = -1, edgeTypes = edgeTypes);
-                let maxDist = -Infinity;
-                for (const sink of sinks) {
-                    if (longestPaths["d"][sink] !== Infinity && longestPaths["d"][sink] > maxDist) {
-                        maxDist = longestPaths["d"][sink];
-                    }
-                }
-                return maxDist;
-            },
+                        layers: layerNumbers,
+                        layerCounts: layerCounts,
+                        };
+              },
+            // longestPathLayering: (edges) => { // Assuming that the graph is acyclic.
+            //     const edgeTypes = [1, 2, 3, 4]; // What type of edges to consider when looking for sinks and longest paths.
+            //     const layers = []; // 0-indexed layers, L0 is the lowest one, containing all sinks.
+            //     const layerCounts = {};
+            //     let layer;
+            //     // console.log(layerCounts);
+            //     // console.log(edges);
+            //     for (let i = 0; i < edges.length; i++) {
+            //         layer = Math.abs(draw.utils.layering.assignLayerTo(i, edges, edgeTypes));
+            //         layers.push(layer);
+            //         if (Object.keys(layerCounts).includes("" + layer)) {
+            //             layerCounts[layer] += 1;
+            //         } else {
+            //             layerCounts[layer] = 1;
+            //         }
+            //     }
+            //     // console.log(layers);
+            //     // console.log(layerCounts);
+            //     return {
+            //         layers: layers,
+            //         layerCounts: layerCounts,
+            //     };
+            // },
+            // assignLayerTo: (node, edges, edgeTypes) => { // node is an index, not the node label.
+            //     const sinks = draw.utils.graph.findSinks(edges, edgeTypes);
+            //     const longestPaths = draw.utils.graph.shortestPaths(edges, node, flip = -1, edgeTypes = edgeTypes);
+            //     let maxDist = -Infinity;
+            //     for (const sink of sinks) {
+            //         if (longestPaths["d"][sink] !== Infinity && longestPaths["d"][sink] > maxDist) {
+            //             maxDist = longestPaths["d"][sink];
+            //         }
+            //     }
+            //     return maxDist;
+            // },
         },
         graph: {
             findSinks: (edges, edgeTypes = [1, 2, 3, 4, 5, 6]) => { // Sinks are all nodes with no outgoing edges.
