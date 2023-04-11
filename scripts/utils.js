@@ -223,7 +223,7 @@ const eventListeners = {
         tempOutput["context"] = outObject["outputObject"]["context"];
         tempGraphObject = draw.utils.graphify(tempOutput);
         graphable = draw.utils.layering.generateLayeredGraph(tempGraphObject, 100, 100);
-        console.log(global.logCount);
+        // console.log(global.logCount);
         draw.update(graphable["nodes"], graphable["edges"], step);
         global.logCount += step;
     },
@@ -500,14 +500,9 @@ const draw = {
             generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.computeLayers, xshift = 100, yshift = 100) => {
                 const nodes = graphObject["nodes"];
                 const edges = graphObject["edges"];
-                console.log("this is the node");
-                console.log(nodes);
-                console.log("this is the edge");
-                console.log(edges);
                 const nodeObjects = [];
                 const edgeObjects = [];
                 const nodeCoords = {}
-
                 const layers = layering(nodes, edges);
                 const seenPerLayer = {};
                 let layer, current;
@@ -527,7 +522,6 @@ const draw = {
                             type: graphObject["nodeType"][i],
                         }
                     };
-                    // console.log(current);
                     nodeObjects.push(current);
                     nodeCoords[nodes[i]] = current;
                 }
@@ -575,14 +569,77 @@ const draw = {
                 layerNumbers.forEach(layer => {
                     layerCounts[layer] = (layerCounts[layer] || 0) + 1;
                 });
-
                 return {
-                        layers: layerNumbers,
-                        layerCounts: layerCounts,
-                        };
+                    layers: layerNumbers,
+                    layerCounts: layerCounts,
+                };
+            },
+        },
+        crossings: {
+            reduce: (edges, layers, reductionMethod = draw.utils.crossings.barycenterMethod) => {
+                const reversedLayers = draw.utils.crossings.reverseLayers(layers);
+                // console.log(reversedLayers);
+                let layer1, layer2, i = 0, step = 1;
+                console.log(i, reversedLayers.length);
+                while (i < Object.values(reversedLayers).length - 1) { // FIXME This is a single pass method, thus,non-optimal.
+                    layer1 = reversedLayers[i];
+                    layer2 = reversedLayers[i + step];
+                    console.log(layer2);
+                    reversedLayers[i + step] = reductionMethod(layer1, layer2, edges);
+                    i += step;
+                }
+                // console.log(reversedLayers);
+                return draw.utils.crossings.concatLayers(reversedLayers);
+            },
+            barycenterMethod: (layer1, layer2, edges) => {
+                const ordinals = {}; // { node: ordinal }
+                let neighbours, newOrdinal;
+                console.log(layer2);
+                for (const node of layer2) {
+                    neighbours = draw.utils.graph.neighbours(node, edges);
+                    newOrdinal = 0;
+                    for (const neighbour of neighbours) {
+                        newOrdinal += layer1.indexOf(neighbour);
+                    }
+                    ordinals[node] = newOrdinal / neighbours.length;
+                }
+                // console.log("layer2:", layer2);
+                layer2.sort((a, b) => {
+                    return ordinals[b] - ordinals[a];
+                });
+                return layer2;
+            },
+            reverseLayers: (layers) => {
+                const reversedLayers = {};
+                for (let i = 0; i < layers.length; i++) {
+                    if (Object.keys(reversedLayers).includes("" + layers[i])) {
+                        reversedLayers[layers[i]].push(i);
+                    } else {
+                        reversedLayers[layers[i]] = [i];
+                    }
+                }
+                return reversedLayers;
+            },
+            concatLayers: (layers) => {
+                let concatLayers = [];
+                for (const layer of Object.values(layers)) {
+                    // console.log("layer:", layer);
+                    concatLayers = concatLayers.concat(layer);
+                }
+                // console.log(concatLayers);
+                return concatLayers;
             },
         },
         graph: {
+            neighbours: (node, edges, edgeTypes = [1, 2, 3, 4, 5]) => {
+                const neighbours = [];
+                for (let i = 0; i < edges[node].length; i++) {
+                    if (edgeTypes.includes(edges[node][i])) {
+                        neighbours.push(i);
+                    }
+                }
+                return neighbours;
+            },
             findSinks: (edges, edgeTypes = [1, 2, 3, 4, 5, 6]) => { // Sinks are all nodes with no outgoing edges.
                 const sinks = [];
                 let j;
