@@ -127,7 +127,7 @@ const prudens = {
             return {
                 outputObject: undefined,
                 outputString: "ERROR: " + contextObject["name"] + ":\n" + contextObject["message"],
-            };
+        };
         }
         const output = forwardChaining(kbObject, contextObject["context"]);
         const inferences = output["facts"];
@@ -183,7 +183,7 @@ const eventListeners = {
         consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
         const graphObject = draw.utils.graphify(outObject["outputObject"]);
         const graphable = draw.utils.layering.generateLayeredGraph(graphObject, 100, 100);
-
+        
         draw.graph(graphable["nodes"], graphable["edges"]);
     },
     updateGraph: (event) => {
@@ -497,17 +497,24 @@ const draw = {
             return index;
         },
         layering: {
-            generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.computeLayersAndNodeCounts, xshift = 100, yshift = 100) => {
+            generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.longestPathLayering, xshift = 100, yshift = 100) => {
                 const nodes = graphObject["nodes"];
                 const edges = graphObject["edges"];
+                // console.log(nodes);
+                // console.log(edges);
                 const nodeObjects = [];
                 const edgeObjects = [];
                 const nodeCoords = {}
-                const layers = layering(nodes, edges);
-
+                let layers = layering(edges)
+                // console.log("layers (before):", layers);
+                const shuffledLayers = draw.utils.crossings.reduce(edges, layers["layers"]);
+                // const shuffledLayers = [ 4, 6, 5, 7, 8, 9, 2, 0, 1, 3 ];
+                // console.log("layers (after):", shuffledLayers);
                 const seenPerLayer = {};
-                let layer, current;
-                for (let i = 0; i < nodes.length; i++) {
+                let layer, current, i;
+                // for (let i = 0; i < nodes.length; i++) {
+                for (let j = 0; j < shuffledLayers.length; j++) {
+                    i = shuffledLayers[j];
                     layer = layers["layers"][i];
                     if (Object.keys(seenPerLayer).includes("" + layer)) {
                         seenPerLayer[layer] += 1;
@@ -523,6 +530,7 @@ const draw = {
                             type: graphObject["nodeType"][i],
                         }
                     };
+                    // console.log(current);
                     nodeObjects.push(current);
                     nodeCoords[nodes[i]] = current;
                 }
@@ -544,72 +552,95 @@ const draw = {
                     edges: edgeObjects,
                 };
             },
-            computeLayersAndNodeCounts: (nodes, edges) => {
-                const graph = new dagre.graphlib.Graph();
-                graph.setGraph({});
-              
-                nodes.forEach(node => {
-                  graph.setNode(node, { label: node, width: 50, height: 50 });
-                });
-              
-                for (let i = 0; i < edges.length; i++) {
-                  for (let j = 0; j < edges[i].length; j++) {
-                    if (i !== j && edges[i][j] !== 0) {
-                      graph.setEdge(nodes[i], nodes[j], { label: edges[i][j] });
-                    }
-                  }
-                }
-              
-                dagre.layout(graph);
-              
-                const layers = nodes.map(node => graph.node(node).y);
-                const layerCoordinates = new Set(layers);
-                const layerNumbers = layers.map(y => [...layerCoordinates].sort((a, b) => a - b).indexOf(y) + 1);
-              
+            longestPathLayering: (edges) => { // Assuming that the graph is acyclic.
+                const edgeTypes = [1, 2, 3, 4]; // What type of edges to consider when looking for sinks and longest paths.
+                const layers = []; // 0-indexed layers, L0 is the lowest one, containing all sinks.
                 const layerCounts = {};
-                layerNumbers.forEach(layer => {
-                  layerCounts[layer] = (layerCounts[layer] || 0) + 1;
-                });
-              
+                let layer;
+                // console.log(layerCounts);
+                // console.log(edges);
+                for (let i = 0; i < edges.length; i++) {
+                    layer = Math.abs(draw.utils.layering.assignLayerTo(i, edges, edgeTypes));
+                    layers.push(layer);
+                    if (Object.keys(layerCounts).includes("" + layer)) {
+                        layerCounts[layer] += 1;
+                    } else {
+                        layerCounts[layer] = 1;
+                    }
+                }
+                // console.log(layers);
+                // console.log(layerCounts);
                 return {
-                        layers: layerNumbers,
-                        layerCounts: layerCounts,
-                        };
-              },
-            // longestPathLayering: (edges) => { // Assuming that the graph is acyclic.
-            //     const edgeTypes = [1, 2, 3, 4]; // What type of edges to consider when looking for sinks and longest paths.
-            //     const layers = []; // 0-indexed layers, L0 is the lowest one, containing all sinks.
-            //     const layerCounts = {};
-            //     let layer;
-            //     // console.log(layerCounts);
-            //     // console.log(edges);
-            //     for (let i = 0; i < edges.length; i++) {
-            //         layer = Math.abs(draw.utils.layering.assignLayerTo(i, edges, edgeTypes));
-            //         layers.push(layer);
-            //         if (Object.keys(layerCounts).includes("" + layer)) {
-            //             layerCounts[layer] += 1;
-            //         } else {
-            //             layerCounts[layer] = 1;
-            //         }
-            //     }
-            //     // console.log(layers);
-            //     // console.log(layerCounts);
-            //     return {
-            //         layers: layers,
-            //         layerCounts: layerCounts,
-            //     };
-            // },
-            // assignLayerTo: (node, edges, edgeTypes) => { // node is an index, not the node label.
-            //     const sinks = draw.utils.graph.findSinks(edges, edgeTypes);
-            //     const longestPaths = draw.utils.graph.shortestPaths(edges, node, flip = -1, edgeTypes = edgeTypes);
-            //     let maxDist = -Infinity;
-            //     for (const sink of sinks) {
-            //         if (longestPaths["d"][sink] !== Infinity && longestPaths["d"][sink] > maxDist) {
-            //             maxDist = longestPaths["d"][sink];
-            //         }
-            //     }
-            //     return maxDist;
-            // },
+                    layers: layers,
+                    layerCounts: layerCounts,
+                };
+            },
+            assignLayerTo: (node, edges, edgeTypes) => { // node is an index, not the node label.
+                const sinks = draw.utils.graph.findSinks(edges, edgeTypes);
+                const longestPaths = draw.utils.graph.shortestPaths(edges, node, flip = -1, edgeTypes = edgeTypes);
+                let maxDist = -Infinity;
+                for (const sink of sinks) {
+                    if (longestPaths["d"][sink] !== Infinity && longestPaths["d"][sink] > maxDist) {
+                        maxDist = longestPaths["d"][sink];
+                    }
+                }
+                return maxDist;
+            },
+        },
+        crossings: {
+            reduce: (edges, layers, reductionMethod = draw.utils.crossings.barycenterMethod) => {
+                const reversedLayers = draw.utils.crossings.reverseLayers(layers);
+                // console.log(reversedLayers);
+                let layer1, layer2, i = 0, step = 1;
+                console.log(i, reversedLayers.length);
+                while (i < Object.values(reversedLayers).length - 1) { // FIXME This is a single pass method, thus,non-optimal.
+                    layer1 = reversedLayers[i];
+                    layer2 = reversedLayers[i + step];
+                    console.log(layer2);
+                    reversedLayers[i + step] = reductionMethod(layer1, layer2, edges);
+                    i += step;
+                }
+                // console.log(reversedLayers);
+                return draw.utils.crossings.concatLayers(reversedLayers);
+            },
+            barycenterMethod: (layer1, layer2, edges) => {
+                const ordinals = {}; // { node: ordinal }
+                let neighbours, newOrdinal;
+                console.log(layer2);
+                for (const node of layer2) {
+                    neighbours = draw.utils.graph.neighbours(node, edges);
+                    newOrdinal = 0;
+                    for (const neighbour of neighbours) {
+                        newOrdinal += layer1.indexOf(neighbour);
+                    }
+                    ordinals[node] = newOrdinal / neighbours.length;
+                }
+                // console.log("layer2:", layer2);
+                layer2.sort((a, b) => {
+                    return ordinals[b] - ordinals[a];
+                });
+                return layer2;
+            },
+            reverseLayers: (layers) => {
+                const reversedLayers = {};
+                for (let i = 0; i < layers.length; i++) {
+                    if (Object.keys(reversedLayers).includes("" + layers[i])) {
+                        reversedLayers[layers[i]].push(i);
+                    } else {
+                        reversedLayers[layers[i]] = [i];
+                    }
+                }
+                return reversedLayers;
+            },
+            concatLayers: (layers) => {
+                let concatLayers = [];
+                for (const layer of Object.values(layers)) {
+                    // console.log("layer:", layer);
+                    concatLayers = concatLayers.concat(layer);
+                }
+                // console.log(concatLayers);
+                return concatLayers;
+            },
         },
         graph: {
             neighbours: (node, edges, edgeTypes = [1, 2, 3, 4, 5]) => {
