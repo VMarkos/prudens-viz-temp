@@ -42,6 +42,16 @@ const defaults = {
     }
 };
 
+const global = {
+    logCount: 0,
+    flashedNodes: [],
+    outObject: {},
+    reset: () => {
+        global.logCount = 0;
+        global.flashedNodes = [];
+    },
+};
+
 const cm = {
     init: (container, width, height, params) => {
         editor = CodeMirror(container, params);
@@ -95,6 +105,8 @@ const init = {
     },
     attachEventListeners: () => {
         document.getElementById("compile-button").addEventListener("click", eventListeners.compile);
+        document.getElementById("next-button").addEventListener("click", eventListeners.updateGraph);
+        // document.getElementById("previous-button").addEventListener("click", eventListeners.updateGraph);
     },
 };
 
@@ -135,7 +147,7 @@ const prudens = {
     utils: {
         inContext: (literal, context) => { // `literal` is string while `context` contains objects.
             for (const item of context) {
-                if (item["name"] === literal) {
+                if (prudens.utils.stringifyLiteral(item) === literal) {
                     return true;
                 }
             }
@@ -161,38 +173,132 @@ const prudens = {
 
 const eventListeners = {
     compile: (event) => {
+        global.reset();
         const outObject = prudens.infer();
-        // const previousConsoleValue = consoleEditor.getValue();
         if (!outObject["outputObject"]) {
             consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
+            draw.clear();
             return;
         }
-        // TODO Here you add any functionality regarding graphs.
-        // draw.graph();
         consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
-        // console.log(outObject);
         const graphObject = draw.utils.graphify(outObject["outputObject"]);
-        // console.log(graphObject);
         const graphable = draw.utils.layering.generateLayeredGraph(graphObject, 100, 100);
-        // console.log(graphable);
+
         draw.graph(graphable["nodes"], graphable["edges"]);
-    }
+    },
+    updateGraph: (event) => {
+        if (document.getElementsByTagName("svg").length === 0) {
+            eventListeners.compile(event);
+            return;
+        }
+        let step;
+        if (event.target.id === "next-button") {
+            step = 1;
+        } else {
+            step = -1;
+        }
+        const outObject = prudens.infer();
+        if (!outObject["outputObject"]) {
+            consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
+            draw.clear();
+            return;
+        }
+        consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
+        let tempOutput, tempGraphObject, graphable;
+        const logs = outObject["outputObject"]["logs"];
+        if (step === 1 && global.logCount === logs.length - 1) {
+            draw.clear();
+            eventListeners.compile(event);
+            return;
+        }
+        if (step === -1 && global.logCount === -1) {
+            global.logCount = logs.length - 1;
+            return;
+        }
+        const log = logs[global.logCount];
+        tempOutput = {};
+        for (const key in log) {
+            tempOutput[key] = log[key];
+        }
+        tempOutput["context"] = outObject["outputObject"]["context"];
+        tempGraphObject = draw.utils.graphify(tempOutput);
+        graphable = draw.utils.layering.generateLayeredGraph(tempGraphObject, 100, 100);
+        // console.log(global.logCount);
+        draw.update(graphable["nodes"], graphable["edges"], step);
+        global.logCount += step;
+    },
+};
+
+const animate = {
+    nodes: {
+        flash: (element, startOpacity, endOpacity) => {
+            if (global.flashedNodes.includes(element[0][0].id)) {
+                return;
+            }
+            element.attr("opacity", startOpacity)
+                .transition()
+                .duration(defaults.animation.times.showDuration / 3)
+                .attr("opacity", endOpacity)
+                .transition()
+                .duration(defaults.animation.times.showDuration / 3)
+                .attr("opacity", startOpacity)
+                .transition()
+                .duration(defaults.animation.times.showDuration / 3)
+                .attr("opacity", endOpacity);
+            global.flashedNodes.push(element[0][0].id);
+        },
+    },
 };
 
 const draw = {
-    graph: (nodes, edges) => {
-        // console.log(nodes, edges);
+    clear: () => {
         const svgs = document.getElementsByTagName("svg")
         if (svgs.length > 0) {
             for (const svg of svgs) {
                 svg.remove();
             }
         }
+    },
+    update: (nodes, edges, step) => {
+        let circle, nodeText, line, startOpacity, endOpacity;
+        if (step === 1) {
+            startOpacity = 0.3;
+            endOpacity = defaults.shapes.nodes.opacity;
+        } else {
+            startOpacity = defaults.shapes.nodes.opacity;
+            endOpacity = 0.3;
+        }
+        for (const node of nodes) {
+            circle = d3.select("#" + node.label);
+            animate.nodes.flash(circle, startOpacity, endOpacity);
+            nodeText = d3.select("#" + node.label + "-text");
+            animate.nodes.flash(nodeText, startOpacity, endOpacity);
+        }
+        for (const edge of edges) {
+            line = d3.select("#" + edge.source.label + "-" + edge.target.label)
+                .attr("opacity", defaults.shapes.edges.opacity);
+        }
+    },
+    graph: (nodes, edges) => {
+        draw.clear();
         const svg = d3.select("#graph-container")
             .append("svg")
             .attr("width", "100%")
             .attr("height", "100%");
         const defs = svg.append("defs");
+        draw.initFilters(defs);
+        let e = svg.selectAll("g")
+            .data(nodes);
+        let eEnter = e.enter().append("g");
+        draw.addNodes(eEnter);
+        draw.addNodeLabels(eEnter);
+        const edgeList = svg.append("g")
+            .selectAll("line")
+            .data(edges)
+            .enter()
+        draw.addEdges(edgeList, defs);
+    },
+    initFilters: (defs) => {
         const filter = defs.append("svg:filter")
             .attr("id", "drop-shadow")
         filter.append("feGaussianBlur")
@@ -209,36 +315,36 @@ const draw = {
             .attr("in", "offsetBlur");
         feMerge.append("feMergeNode")
             .attr("in", "SourceGraphic");
-
-        let e = svg.selectAll("g")
-            .data(nodes);
-        let eEnter = e.enter()
-            .append("g")
-            .attr("transform", (d) => { return "translate(" + d.x + "," + d.y + ")"; });
-        let circle = eEnter.append("circle")
+    },
+    addNodes: (eEnter) => {
+        eEnter.attr("transform", (d) => { return "translate(" + d.x + "," + d.y + ")"; })
+            .append("circle")
+            .attr("id", (d) => { return d.label; })
             .attr("r", (d) => { return 0; })
             .transition()
             .duration(defaults.animation.times.showDuration)
             .attr("r", (d) => { return defaults.shapes.nodes.r; })
-            .style("class", "node-yshift")
             .attr("stroke", "#ac0000")
             .attr("fill", defaults.shapes.nodes.color)
             .attr("stroke-width", 0)
-            .attr("opacity", defaults.shapes.nodes.opacity)
+            .attr("opacity", 0.3)
             .attr("filter", "url(#drop-shadow)");
+    },
+    addNodeLabels: (eEnter) => {
         eEnter.append("text")
+            .attr("id", (d) => { return d.label + "-text"; })
             .attr("alignment-baseline", "middle")
             .attr("dominant-baseline", "middle")
             .attr("text-anchor", "middle")
             .attr("fill", defaults.shapes.nodes.textColor)
+            .attr("opacity", 0.3)
             .transition()
             .delay(defaults.animation.times.showDuration)
             .text((d) => { return d.label; });
-        svg.append("g")
-            .selectAll("line")
-            .data(edges)
-            .enter()
-            .append("line")
+    },
+    addEdges: (edges, defs) => {
+        edges.append("line")
+            .attr("id", (d) => { return d.source.label + "-" + d.target.label; })
             .attr("stroke", defaults.shapes.edges.color)
             .attr("stroke-width", (d) => { return defaults.shapes.edges.strokeWidth; })
             .attr("x1", (d) => { return (d.source.x + d.target.x) / 2; })
@@ -252,11 +358,11 @@ const draw = {
             .attr("y1", (d) => { return d.source.y + draw.utils.shorten(d).yshorten; })
             .attr("x2", (d) => { return d.target.x - draw.utils.shorten(d).xshorten; })
             .attr("y2", (d) => { return d.target.y - draw.utils.shorten(d).yshorten; })
-            .attr("opacity", defaults.shapes.edges.opacity)
+            .attr("opacity", 0.3)
             .attr("marker-end", (d) => {
                 const color = defaults.shapes.edges.color(d);
                 return draw.utils.addMarker(color, defs);
-            })
+            });
     },
     utils: {
         addMarker: (color, defs) => {
@@ -289,6 +395,7 @@ const draw = {
             };
         },
         graphify: (prudensOutput) => {
+            // console.log("out:", prudensOutput);
             const graph = prudensOutput["graph"];
             const context = prudensOutput["context"];
             const defeatedRules = prudensOutput["defeatedRules"];
@@ -362,7 +469,8 @@ const draw = {
                 edges = draw.utils.addEdgeRow(edges);
             }
             edges[ruleIndex][headIndex] = defeated ? (rule["head"]["sign"] ? 3 : 4) : (rule["head"]["sign"] ? 1 : 2);
-            // console.log(rule["name"], "\n\r", utils.matToString(edges));
+            // console.log(rule["name"], "\n", utils.matToString(edges));
+            // console.log("ruleBody:", ruleBody);
             for (const bodyLiteral of ruleBody) {
                 bodyIndex = draw.utils.addLiteralNode(prudens.utils.stringifyLiteral(bodyLiteral), context, nodes, edges, nodeType, sign);
                 edges[bodyIndex][ruleIndex] = defeated ? (bodyLiteral["sign"] ? 3 : 4) : (bodyLiteral["sign"] ? 1 : 2);
@@ -415,7 +523,6 @@ const draw = {
                             type: graphObject["nodeType"][i],
                         }
                     };
-                    // console.log(current);
                     nodeObjects.push(current);
                     nodeCoords[nodes[i]] = current;
                 }
@@ -505,6 +612,15 @@ const draw = {
             // },
         },
         graph: {
+            neighbours: (node, edges, edgeTypes = [1, 2, 3, 4, 5]) => {
+                const neighbours = [];
+                for (let i = 0; i < edges[node].length; i++) {
+                    if (edgeTypes.includes(edges[node][i])) {
+                        neighbours.push(i);
+                    }
+                }
+                return neighbours;
+            },
             findSinks: (edges, edgeTypes = [1, 2, 3, 4, 5, 6]) => { // Sinks are all nodes with no outgoing edges.
                 const sinks = [];
                 let j;
