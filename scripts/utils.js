@@ -343,21 +343,29 @@ const draw = {
             .text((d) => { return d.label; });
     },
     addEdges: (edges, defs) => {
-        edges.append("line")
+        const diagonal = d3.svg.diagonal()
+            .source(d => ({x: d.source.y, y: d.source.x}))
+            .target(d => ({x: d.target.y, y: d.target.x}))
+            .projection(d => [d.y, d.x]);
+
+        const path = edges.append("path")
             .attr("id", (d) => { return d.source.label + "-" + d.target.label; })
             .attr("stroke", defaults.shapes.edges.color)
             .attr("stroke-width", (d) => { return defaults.shapes.edges.strokeWidth; })
-            .attr("x1", (d) => { return (d.source.x + d.target.x) / 2; })
-            .attr("y1", (d) => { return (d.source.y + d.target.y) / 2; })
-            .attr("x2", (d) => { return (d.source.x + d.target.x) / 2; })
-            .attr("y2", (d) => { return (d.source.y + d.target.y) / 2; })
-            .attr("opacity", (d) => { return 0.0; })
+            .attr("d", d => {
+                const source = { x: (d.source.x + d.target.x) / 2, y: (d.source.y + d.target.y) / 2 };
+                const target = { x: (d.source.x + d.target.x) / 2, y: (d.source.y + d.target.y) / 2 };
+                return diagonal({source: source, target: target});
+            })
+            .attr("opacity", 0.3)
+            .attr("fill", "none") 
             .transition()
             .duration(defaults.animation.times.showDuration)
-            .attr("x1", (d) => { return d.source.x + draw.utils.shorten(d).xshorten; })
-            .attr("y1", (d) => { return d.source.y + draw.utils.shorten(d).yshorten; })
-            .attr("x2", (d) => { return d.target.x - draw.utils.shorten(d).xshorten; })
-            .attr("y2", (d) => { return d.target.y - draw.utils.shorten(d).yshorten; })
+            .attr("d", d => {
+                const source = { x: d.source.x + draw.utils.shorten(d).xshorten, y: d.source.y + draw.utils.shorten(d).yshorten };
+                const target = { x: d.target.x - draw.utils.shorten(d).xshorten, y: d.target.y - draw.utils.shorten(d).yshorten };
+                return diagonal({source: source, target: target});
+            })
             .attr("opacity", 0.3)
             .attr("marker-end", (d) => {
                 const color = defaults.shapes.edges.color(d);
