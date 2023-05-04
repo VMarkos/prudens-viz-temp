@@ -12,6 +12,8 @@
         </script>
         <script type="text/javascript" src="./scripts/simpleMode.js"></script>
         <script type="text/javascript" src="./scripts/prudensMode.js"></script>
+        <!-- Font Awesome 4.7 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <!-- D3 -->
         <script src="https://d3js.org/d3.v3.min.js"></script>
         <!-- Prudens -->
@@ -26,7 +28,10 @@
     </head>
     <body>
         <div class="navbar-container">
-            Prudens
+            <div class="navbar-max-width">
+                <span class="site-title">Prudens</span>
+                <a href="https://github.com/VMarkos/prudens-viz-temp"><i class="fa fa-github fa-2x"></i></a>
+            </div>
         </div>
         <div class="main-container">
             <div class="policy-container">
@@ -59,6 +64,12 @@
                     <div id="next-button" class="button hidden">Next</div>
                     <!-- <div id="previous-button" class="button hidden">Previous</div> -->
                 </div>
+            </div>
+            <div class="policy-container">
+                <div class="code-container-header">
+                    Explanation
+                </div>
+                <textarea id="text-explanation-container"></textarea>
             </div>
         </div>
     </body>
