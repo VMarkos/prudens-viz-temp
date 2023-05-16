@@ -553,36 +553,20 @@ const draw = {
                 };
             },
             computeLayersAndNodeCounts: (nodes, edges) => {
-                const graph = new dagre.graphlib.Graph();
-                graph.setGraph({});
-              
+                let dotGraph = "digraph {\n";
                 nodes.forEach(node => {
-                  graph.setNode(node, { label: node, width: 50, height: 50 });
+                dotGraph += ` "${node}";\n`;
                 });
-              
                 for (let i = 0; i < edges.length; i++) {
-                  for (let j = 0; j < edges[i].length; j++) {
-                    if (i !== j && edges[i][j] !== 0) {
-                      graph.setEdge(nodes[i], nodes[j], { label: edges[i][j] });
-                    }
-                  }
+                for (let j = 0; j < edges[i].length; j++) {
+                const weight = edges[i][j];
+                if (weight !== 0) {
+                dotGraph += ` "${nodes[i]}" -> "${nodes[j]}" [weight=${weight}];\n`;
                 }
-              
-                dagre.layout(graph);
-              
-                const layers = nodes.map(node => graph.node(node).y);
-                const layerCoordinates = new Set(layers);
-                const layerNumbers = layers.map(y => [...layerCoordinates].sort((a, b) => a - b).indexOf(y) + 1);
-              
-                const layerCounts = {};
-                layerNumbers.forEach(layer => {
-                  layerCounts[layer] = (layerCounts[layer] || 0) + 1;
-                });
-              
-                return {
-                        layers: layerNumbers,
-                        layerCounts: layerCounts,
-                        };
+                }
+                }
+                dotGraph += "}\n";
+                console.log(dotGraph);
               },
             // longestPathLayering: (edges) => { // Assuming that the graph is acyclic.
             //     const edgeTypes = [1, 2, 3, 4]; // What type of edges to consider when looking for sinks and longest paths.
