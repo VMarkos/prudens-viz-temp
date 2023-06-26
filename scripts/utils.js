@@ -249,7 +249,6 @@ const animate = {
         },
     },
 };
-
 const draw = {
     clear: () => {
         const svgs = document.getElementsByTagName("svg")
@@ -344,8 +343,8 @@ const draw = {
     },
     addEdges: (edges, defs) => {
         const diagonal = d3.svg.diagonal()
-            .source(d => ({x: d.source.y, y: d.source.x}))
-            .target(d => ({x: d.target.y, y: d.target.x}))
+            .source(d => ({ x: d.source.y, y: d.source.x }))
+            .target(d => ({ x: d.target.y, y: d.target.x }))
             .projection(d => [d.y, d.x]);
 
         const path = edges.append("path")
@@ -355,16 +354,16 @@ const draw = {
             .attr("d", d => {
                 const source = { x: (d.source.x + d.target.x) / 2, y: (d.source.y + d.target.y) / 2 };
                 const target = { x: (d.source.x + d.target.x) / 2, y: (d.source.y + d.target.y) / 2 };
-                return diagonal({source: source, target: target});
+                return diagonal({ source: source, target: target });
             })
             .attr("opacity", 0.3)
-            .attr("fill", "none") 
+            .attr("fill", "none")
             .transition()
             .duration(defaults.animation.times.showDuration)
             .attr("d", d => {
                 const source = { x: d.source.x + draw.utils.shorten(d).xshorten, y: d.source.y + draw.utils.shorten(d).yshorten };
                 const target = { x: d.target.x - draw.utils.shorten(d).xshorten, y: d.target.y - draw.utils.shorten(d).yshorten };
-                return diagonal({source: source, target: target});
+                return diagonal({ source: source, target: target });
             })
             .attr("opacity", 0.3)
             .attr("marker-end", (d) => {
@@ -508,11 +507,11 @@ const draw = {
             generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.computeLayersAndNodeCounts, xshift = 100, yshift = 100) => {
                 const nodes = graphObject["nodes"];
                 const edges = graphObject["edges"];
+                // console.log(nodes, edges);
                 const nodeObjects = [];
                 const edgeObjects = [];
                 const nodeCoords = {}
                 const layers = layering(nodes, edges);
-
                 const seenPerLayer = {};
                 let layer, current;
                 for (let i = 0; i < nodes.length; i++) {
@@ -552,56 +551,116 @@ const draw = {
                     edges: edgeObjects,
                 };
             },
-            computeLayersAndNodeCounts: (nodes, edges) => {
+            computeLayersAndNodeCounts: (nodeList, edgeMatrix) => {
+                console.log(nodeList, edgeMatrix);
                 let dotGraph = "digraph {\n";
-                nodes.forEach(node => {
-                dotGraph += ` "${node}";\n`;
+                nodeList.forEach(node => {
+                    dotGraph += ` "${node}";\n`;
                 });
-                for (let i = 0; i < edges.length; i++) {
-                for (let j = 0; j < edges[i].length; j++) {
-                const weight = edges[i][j];
-                if (weight !== 0) {
-                dotGraph += ` "${nodes[i]}" -> "${nodes[j]}" [weight=${weight}];\n`;
-                }
-                }
+                for (let i = 0; i < edgeMatrix.length; i++) {
+                    for (let j = 0; j < edgeMatrix[i].length; j++) {
+                        const weight = edgeMatrix[i][j];
+                        if (weight > 0 && weight < 5) {
+                            dotGraph += ` "${nodeList[i]}" -> "${nodeList[j]}";\n`;
+                        }
+                    }
                 }
                 dotGraph += "}\n";
                 console.log(dotGraph);
-              },
-            // longestPathLayering: (edges) => { // Assuming that the graph is acyclic.
-            //     const edgeTypes = [1, 2, 3, 4]; // What type of edges to consider when looking for sinks and longest paths.
-            //     const layers = []; // 0-indexed layers, L0 is the lowest one, containing all sinks.
-            //     const layerCounts = {};
-            //     let layer;
-            //     // console.log(layerCounts);
-            //     // console.log(edges);
-            //     for (let i = 0; i < edges.length; i++) {
-            //         layer = Math.abs(draw.utils.layering.assignLayerTo(i, edges, edgeTypes));
-            //         layers.push(layer);
-            //         if (Object.keys(layerCounts).includes("" + layer)) {
-            //             layerCounts[layer] += 1;
-            //         } else {
-            //             layerCounts[layer] = 1;
-            //         }
-            //     }
-            //     // console.log(layers);
-            //     // console.log(layerCounts);
-            //     return {
-            //         layers: layers,
-            //         layerCounts: layerCounts,
-            //     };
-            // },
-            // assignLayerTo: (node, edges, edgeTypes) => { // node is an index, not the node label.
-            //     const sinks = draw.utils.graph.findSinks(edges, edgeTypes);
-            //     const longestPaths = draw.utils.graph.shortestPaths(edges, node, flip = -1, edgeTypes = edgeTypes);
-            //     let maxDist = -Infinity;
-            //     for (const sink of sinks) {
-            //         if (longestPaths["d"][sink] !== Infinity && longestPaths["d"][sink] > maxDist) {
-            //             maxDist = longestPaths["d"][sink];
-            //         }
-            //     }
-            //     return maxDist;
-            // },
+
+                let edges = {};
+
+                for (let i = 0; i < nodeList.length; i++) {
+                    edges[nodeList[i]] = [];
+                    for (let j = 0; j < nodeList.length; j++) {
+                        if (edgeMatrix[i][j] !== 0) {
+                            edges[nodeList[i]].push(nodeList[j]);
+                        }
+                    }
+                }
+                let nodes = nodeList;
+                console.log(edges);
+
+                // Step 2: Find the root nodes
+                const rootNodes = nodes.filter(node => !Object.values(edges).flat().includes(node));
+
+                // Step 3: Calculate the levels of nodes
+                const levels = {};
+                const queue = [...rootNodes];
+                rootNodes.forEach(root => { levels[root] = 0 });
+
+                while (queue.length > 0) {
+                    const node = queue.shift();
+                    const level = levels[node];
+                    const neighbors = edges[node];
+                
+                    for (let neighbor of neighbors) {
+                        if (levels[neighbor] === undefined) {
+                            queue.push(neighbor);
+                            if (neighbor.startsWith("R")) {
+                                levels[neighbor] = level + 1;
+                            } else {
+                                levels[neighbor] = level + 2;
+                            }
+                        }
+                    }
+                }
+
+                console.log("Final levels:", levels);
+                // console.log(levels);
+                // Creating layers_rep array
+                let layers_rep = nodes.map(node => levels[node]);
+
+                // Creating layerCount_rep object
+                let layerCount_rep = {};
+                for (let level of Object.values(levels)) {
+                    if (level in layerCount_rep) {
+                        layerCount_rep[level]++;
+                    } else {
+                        layerCount_rep[level] = 1;
+                    }
+                };
+
+                return {
+                    layers: layers_rep,
+                    layerCounts: layerCount_rep,
+                };
+            },
+
+            longestPathLayering: (edges) => { // Assuming that the graph is acyclic.
+                const edgeTypes = [1, 2, 3, 4]; // What type of edges to consider when looking for sinks and longest paths.
+                const layers = []; // 0-indexed layers, L0 is the lowest one, containing all sinks.
+                const layerCounts = {};
+                let layer;
+                // console.log(layerCounts);
+                console.log(edges);
+                for (let i = 0; i < edges.length; i++) {
+                    layer = Math.abs(draw.utils.layering.assignLayerTo(i, edges, edgeTypes));
+                    layers.push(layer);
+                    if (Object.keys(layerCounts).includes("" + layer)) {
+                        layerCounts[layer] += 1;
+                    } else {
+                        layerCounts[layer] = 1;
+                    }
+                }
+                // console.log(layers);
+                // console.log(layerCounts);
+                return {
+                    layers: layers,
+                    layerCounts: layerCounts,
+                };
+            },
+            assignLayerTo: (node, edges, edgeTypes) => { // node is an index, not the node label.
+                const sinks = draw.utils.graph.findSinks(edges, edgeTypes);
+                const longestPaths = draw.utils.graph.shortestPaths(edges, node, flip = -1, edgeTypes = edgeTypes);
+                let maxDist = -Infinity;
+                for (const sink of sinks) {
+                    if (longestPaths["d"][sink] !== Infinity && longestPaths["d"][sink] > maxDist) {
+                        maxDist = longestPaths["d"][sink];
+                    }
+                }
+                return maxDist;
+            },
         },
         graph: {
             neighbours: (node, edges, edgeTypes = [1, 2, 3, 4, 5]) => {
