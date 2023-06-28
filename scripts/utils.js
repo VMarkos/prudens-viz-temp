@@ -249,9 +249,10 @@ const animate = {
         },
     },
 };
+
 const draw = {
     clear: () => {
-        const svgs = document.getElementsByTagName("svg")
+        const svgs = document.getElementsByTagName("svg");
         if (svgs.length > 0) {
             for (const svg of svgs) {
                 svg.remove();
@@ -343,9 +344,9 @@ const draw = {
     },
     addEdges: (edges, defs) => {
         const diagonal = d3.svg.diagonal()
-            .source(d => ({ x: d.source.y, y: d.source.x }))
-            .target(d => ({ x: d.target.y, y: d.target.x }))
-            .projection(d => [d.y, d.x]);
+            .source(d => ({ x: d.source.x, y: d.source.y }))
+            .target(d => ({ x: d.target.x, y: d.target.y }));
+            // .projection(d => [d.y, d.x]);
 
         const path = edges.append("path")
             .attr("id", (d) => { return d.source.label + "-" + d.target.label; })
@@ -391,15 +392,28 @@ const draw = {
         shorten: (d) => {
             const dx = d.target.x - d.source.x;
             const dy = d.target.y - d.source.y;
-            const xCoeff = dx === 0 ? 0 : 1 / Math.sqrt(1 + Math.pow(dy / dx, 2));
-            const yCoeff = dx === 0 ? 1 : dy / (dx * Math.sqrt(1 + Math.pow(dy / dx, 2)));
-            const ysign = dx * dy < 0 ? - Math.sign(dy) : Math.sign(dy);
-            const xshorten = Math.sign(dx) * defaults.shapes.nodes.r * xCoeff;
-            const yshorten = ysign * defaults.shapes.nodes.r * yCoeff;
+            if (dx !== 0 && dy === 0) {
+                return {
+                    xshorten: Math.sign(dx) * defaults.shapes.nodes.r,
+                    yshorten: 0,
+                };
+            }
             return {
-                xshorten: xshorten,
-                yshorten: yshorten,
+                xshorten: 0,
+                yshorten: Math.sign(dy) * defaults.shapes.nodes.r,
             };
+            // TODO This is the original definition!
+            // const dx = d.target.x - d.source.x;
+            // const dy = d.target.y - d.source.y;
+            // const xCoeff = dx === 0 ? 0 : 1 / Math.sqrt(1 + Math.pow(dy / dx, 2));
+            // const yCoeff = dx === 0 ? 1 : dy / (dx * Math.sqrt(1 + Math.pow(dy / dx, 2)));
+            // const ysign = dx * dy < 0 ? - Math.sign(dy) : Math.sign(dy);
+            // const xshorten = Math.sign(dx) * defaults.shapes.nodes.r * xCoeff;
+            // const yshorten = ysign * defaults.shapes.nodes.r * yCoeff;
+            // return {
+            //     xshorten: xshorten,
+            //     yshorten: yshorten,
+            // };
         },
         graphify: (prudensOutput) => {
             // console.log("out:", prudensOutput);
