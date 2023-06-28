@@ -600,7 +600,13 @@ const draw = {
                             if (neighbor.startsWith("R")) {
                                 levels[neighbor] = level + 1;
                             } else {
-                                levels[neighbor] = level + 2;
+                                levels[neighbor] = level + 1;
+                            }
+                        } else {
+                            if (neighbor.startsWith("R")) {
+                                levels[neighbor] = Math.max(levels[neighbor], level  + 1);
+                            } else {
+                                levels[neighbor] = Math.max(levels[neighbor], level  + 1);
                             }
                         }
                     }
