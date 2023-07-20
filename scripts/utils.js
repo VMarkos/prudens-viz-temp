@@ -249,9 +249,10 @@ const animate = {
         },
     },
 };
+
 const draw = {
     clear: () => {
-        const svgs = document.getElementsByTagName("svg")
+        const svgs = document.getElementsByTagName("svg");
         if (svgs.length > 0) {
             for (const svg of svgs) {
                 svg.remove();
@@ -343,9 +344,9 @@ const draw = {
     },
     addEdges: (edges, defs) => {
         const diagonal = d3.svg.diagonal()
-            .source(d => ({ x: d.source.y, y: d.source.x }))
-            .target(d => ({ x: d.target.y, y: d.target.x }))
-            .projection(d => [d.y, d.x]);
+            .source(d => ({ x: d.source.x, y: d.source.y }))
+            .target(d => ({ x: d.target.x, y: d.target.y }));
+            // .projection(d => [d.y, d.x]);
 
         const path = edges.append("path")
             .attr("id", (d) => { return d.source.label + "-" + d.target.label; })
@@ -391,15 +392,28 @@ const draw = {
         shorten: (d) => {
             const dx = d.target.x - d.source.x;
             const dy = d.target.y - d.source.y;
-            const xCoeff = dx === 0 ? 0 : 1 / Math.sqrt(1 + Math.pow(dy / dx, 2));
-            const yCoeff = dx === 0 ? 1 : dy / (dx * Math.sqrt(1 + Math.pow(dy / dx, 2)));
-            const ysign = dx * dy < 0 ? - Math.sign(dy) : Math.sign(dy);
-            const xshorten = Math.sign(dx) * defaults.shapes.nodes.r * xCoeff;
-            const yshorten = ysign * defaults.shapes.nodes.r * yCoeff;
+            if (dx !== 0 && dy === 0) {
+                return {
+                    xshorten: Math.sign(dx) * defaults.shapes.nodes.r,
+                    yshorten: 0,
+                };
+            }
             return {
-                xshorten: xshorten,
-                yshorten: yshorten,
+                xshorten: 0,
+                yshorten: Math.sign(dy) * defaults.shapes.nodes.r,
             };
+            // TODO This is the original definition!
+            // const dx = d.target.x - d.source.x;
+            // const dy = d.target.y - d.source.y;
+            // const xCoeff = dx === 0 ? 0 : 1 / Math.sqrt(1 + Math.pow(dy / dx, 2));
+            // const yCoeff = dx === 0 ? 1 : dy / (dx * Math.sqrt(1 + Math.pow(dy / dx, 2)));
+            // const ysign = dx * dy < 0 ? - Math.sign(dy) : Math.sign(dy);
+            // const xshorten = Math.sign(dx) * defaults.shapes.nodes.r * xCoeff;
+            // const yshorten = ysign * defaults.shapes.nodes.r * yCoeff;
+            // return {
+            //     xshorten: xshorten,
+            //     yshorten: yshorten,
+            // };
         },
         graphify: (prudensOutput) => {
             // console.log("out:", prudensOutput);
@@ -583,29 +597,41 @@ const draw = {
 
                 // Step 2: Find the root nodes
                 const rootNodes = nodes.filter(node => !Object.values(edges).flat().includes(node));
-
+                // const rootNodes = nodes.filter(node =>  edges[node].length === 0);
+                console.log(rootNodes);
                 // Step 3: Calculate the levels of nodes
                 const levels = {};
                 const queue = [...rootNodes];
                 rootNodes.forEach(root => { levels[root] = 0 });
-
+                const visited = [];
                 while (queue.length > 0) {
                     const node = queue.shift();
+                    visited.push(node);
                     const level = levels[node];
                     const neighbors = edges[node];
-                
+                    console.log(utils.roundModN(4, k = 1));
                     for (let neighbor of neighbors) {
                         if (levels[neighbor] === undefined) {
-                            queue.push(neighbor);
+                            if (!visited.includes(neighbor)) {
+                                queue.push(neighbor);
+                            }
                             if (neighbor.startsWith("R")) {
-                                levels[neighbor] = level + 1;
+                                levels[neighbor] = utils.roundModN(level + 1, k = 1);
                             } else {
-                                levels[neighbor] = level + 2;
+                                levels[neighbor] = utils.roundModN(level + 1);
                             }
                         }
+                        // else {
+                        //     if (neighbor.startsWith("R")) {
+                        //         levels[neighbor] = utils.roundModN(Math.max(levels[neighbor], level + 1), k = 1);
+                        //     } else {
+                        //         levels[neighbor] = utils.roundModN(Math.max(levels[neighbor], level + 1));
+                        //     }
+                        // }
                     }
                 }
-
+                // const maxLevel = -Math.min(...Object.values(levels));
+                // Object.keys(levels).forEach(node => { levels[node] += maxLevel; } );
                 console.log("Final levels:", levels);
                 // console.log(levels);
                 // Creating layers_rep array
@@ -795,7 +821,7 @@ const utils = {
         }
         return copyEdges;
     },
-    deepEquals(x, y) {
+    deepEquals: (x, y) => {
         if (typeof x !== typeof y) {
             return false;
         }
@@ -814,12 +840,18 @@ const utils = {
         }
         return true;
     },
-    deepIncludes(array, item) {
+    deepIncludes: (array, item) => {
         for (const x of array) {
             if (utils.deepEquals(x, item)) {
                 return true;
             }
         }
         return false;
+    },
+    roundModN(x, k = 0, N = 2) {// `x`: integer to be rounded mod N, `N`: modulus, `k`: rounding value modulo N.
+        // Rounds x to (upwards) to the  closest value equivalent to k modulo N.
+        const q = Math.floor(x / N);
+        const r = x % N;
+        return (k < r) ? (q + 1) * N + k : q * N + k;
     }
 }
