@@ -29,14 +29,15 @@ body {
     color: var(--main-text-color);
     box-shadow: 0px 5px 5px var(--main-shadow-color);
     user-select: none;
+    width: 100%;  /* Ensure the container takes full width */
 }
 
 .navbar-max-width {
-    width: 100%;
-    max-width: 1000px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;  /* Ensure this container takes full width */
+    padding: 0 2%;  /* Add some padding to ensure content doesn't stick to the edges */
 }
 
 .site-title {
