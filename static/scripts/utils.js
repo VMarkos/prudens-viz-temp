@@ -566,7 +566,7 @@ const draw = {
                 };
             },
             computeLayersAndNodeCounts: (nodeList, edgeMatrix) => {
-                console.log(nodeList, edgeMatrix);
+                // console.log(nodeList, edgeMatrix);
                 let dotGraph = "digraph {\n";
                 nodeList.forEach(node => {
                     dotGraph += ` "${node}";\n`;
@@ -581,7 +581,6 @@ const draw = {
                 }
                 dotGraph += "}\n";
                 console.log(dotGraph);
-
                 let edges = {};
 
                 for (let i = 0; i < nodeList.length; i++) {
@@ -593,7 +592,7 @@ const draw = {
                     }
                 }
                 let nodes = nodeList;
-                console.log(edges);
+                // console.log(edges);
 
                 // Step 2: Find the root nodes
                 const rootNodes = nodes.filter(node => !Object.values(edges).flat().includes(node));
@@ -626,7 +625,7 @@ const draw = {
                     }
                 }
 
-                console.log("Final levels:", levels);
+                // console.log("Final levels:", levels);
                 // console.log(levels);
                 // Creating layers_rep array
                 let layers_rep = nodes.map(node => levels[node]);
@@ -653,7 +652,7 @@ const draw = {
                 const layerCounts = {};
                 let layer;
                 // console.log(layerCounts);
-                console.log(edges);
+                // console.log(edges);
                 for (let i = 0; i < edges.length; i++) {
                     layer = Math.abs(draw.utils.layering.assignLayerTo(i, edges, edgeTypes));
                     layers.push(layer);
