@@ -42,16 +42,6 @@ const defaults = {
     }
 };
 
-const global = {
-    logCount: 0,
-    flashedNodes: [],
-    outObject: {},
-    reset: () => {
-        global.logCount = 0;
-        global.flashedNodes = [];
-    },
-};
-
 const cm = {
     init: (container, width, height, params) => {
         editor = CodeMirror(container, params);
@@ -105,8 +95,6 @@ const init = {
     },
     attachEventListeners: () => {
         document.getElementById("compile-button").addEventListener("click", eventListeners.compile);
-        document.getElementById("next-button").addEventListener("click", eventListeners.updateGraph);
-        // document.getElementById("previous-button").addEventListener("click", eventListeners.updateGraph);
     },
 };
 
@@ -127,7 +115,7 @@ const prudens = {
             return {
                 outputObject: undefined,
                 outputString: "ERROR: " + contextObject["name"] + ":\n" + contextObject["message"],
-            };
+        };
         }
         const output = forwardChaining(kbObject, contextObject["context"]);
         const inferences = output["facts"];
@@ -147,7 +135,7 @@ const prudens = {
     utils: {
         inContext: (literal, context) => { // `literal` is string while `context` contains objects.
             for (const item of context) {
-                if (prudens.utils.stringifyLiteral(item) === literal) {
+                if (item["name"] === literal) {
                     return true;
                 }
             }
@@ -173,132 +161,38 @@ const prudens = {
 
 const eventListeners = {
     compile: (event) => {
-        global.reset();
         const outObject = prudens.infer();
+        // const previousConsoleValue = consoleEditor.getValue();
         if (!outObject["outputObject"]) {
             consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
-            draw.clear();
             return;
         }
+        // TODO Here you add any functionality regarding graphs.
+        // draw.graph();
         consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
+        // console.log(outObject);
         const graphObject = draw.utils.graphify(outObject["outputObject"]);
+        // console.log(graphObject);
         const graphable = draw.utils.layering.generateLayeredGraph(graphObject, 100, 100);
-
+        // console.log(graphable);
         draw.graph(graphable["nodes"], graphable["edges"]);
-    },
-    updateGraph: (event) => {
-        if (document.getElementsByTagName("svg").length === 0) {
-            eventListeners.compile(event);
-            return;
-        }
-        let step;
-        if (event.target.id === "next-button") {
-            step = 1;
-        } else {
-            step = -1;
-        }
-        const outObject = prudens.infer();
-        if (!outObject["outputObject"]) {
-            consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
-            draw.clear();
-            return;
-        }
-        consoleEditor.setValue(outObject["outputString"] + "\n~$ ");
-        let tempOutput, tempGraphObject, graphable;
-        const logs = outObject["outputObject"]["logs"];
-        if (step === 1 && global.logCount === logs.length - 1) {
-            draw.clear();
-            eventListeners.compile(event);
-            return;
-        }
-        if (step === -1 && global.logCount === -1) {
-            global.logCount = logs.length - 1;
-            return;
-        }
-        const log = logs[global.logCount];
-        tempOutput = {};
-        for (const key in log) {
-            tempOutput[key] = log[key];
-        }
-        tempOutput["context"] = outObject["outputObject"]["context"];
-        tempGraphObject = draw.utils.graphify(tempOutput);
-        graphable = draw.utils.layering.generateLayeredGraph(tempGraphObject, 100, 100);
-        // console.log(global.logCount);
-        draw.update(graphable["nodes"], graphable["edges"], step);
-        global.logCount += step;
-    },
-};
-
-const animate = {
-    nodes: {
-        flash: (element, startOpacity, endOpacity) => {
-            if (global.flashedNodes.includes(element[0][0].id)) {
-                return;
-            }
-            element.attr("opacity", startOpacity)
-                .transition()
-                .duration(defaults.animation.times.showDuration / 3)
-                .attr("opacity", endOpacity)
-                .transition()
-                .duration(defaults.animation.times.showDuration / 3)
-                .attr("opacity", startOpacity)
-                .transition()
-                .duration(defaults.animation.times.showDuration / 3)
-                .attr("opacity", endOpacity);
-            global.flashedNodes.push(element[0][0].id);
-        },
-    },
+    }
 };
 
 const draw = {
-    clear: () => {
-        const svgs = document.getElementsByTagName("svg");
+    graph: (nodes, edges) => {
+        // console.log(nodes, edges);
+        const svgs = document.getElementsByTagName("svg")
         if (svgs.length > 0) {
             for (const svg of svgs) {
                 svg.remove();
             }
         }
-    },
-    update: (nodes, edges, step) => {
-        let circle, nodeText, line, startOpacity, endOpacity;
-        if (step === 1) {
-            startOpacity = 0.3;
-            endOpacity = defaults.shapes.nodes.opacity;
-        } else {
-            startOpacity = defaults.shapes.nodes.opacity;
-            endOpacity = 0.3;
-        }
-        for (const node of nodes) {
-            circle = d3.select("#" + node.label);
-            animate.nodes.flash(circle, startOpacity, endOpacity);
-            nodeText = d3.select("#" + node.label + "-text");
-            animate.nodes.flash(nodeText, startOpacity, endOpacity);
-        }
-        for (const edge of edges) {
-            line = d3.select("#" + edge.source.label + "-" + edge.target.label)
-                .attr("opacity", defaults.shapes.edges.opacity);
-        }
-    },
-    graph: (nodes, edges) => {
-        draw.clear();
         const svg = d3.select("#graph-container")
             .append("svg")
             .attr("width", "100%")
             .attr("height", "100%");
         const defs = svg.append("defs");
-        draw.initFilters(defs);
-        let e = svg.selectAll("g")
-            .data(nodes);
-        let eEnter = e.enter().append("g");
-        draw.addNodes(eEnter);
-        draw.addNodeLabels(eEnter);
-        const edgeList = svg.append("g")
-            .selectAll("line")
-            .data(edges)
-            .enter()
-        draw.addEdges(edgeList, defs);
-    },
-    initFilters: (defs) => {
         const filter = defs.append("svg:filter")
             .attr("id", "drop-shadow")
         filter.append("feGaussianBlur")
@@ -315,62 +209,54 @@ const draw = {
             .attr("in", "offsetBlur");
         feMerge.append("feMergeNode")
             .attr("in", "SourceGraphic");
-    },
-    addNodes: (eEnter) => {
-        eEnter.attr("transform", (d) => { return "translate(" + d.x + "," + d.y + ")"; })
-            .append("circle")
-            .attr("id", (d) => { return d.label; })
+
+        let e = svg.selectAll("g")
+            .data(nodes);
+        let eEnter = e.enter()
+            .append("g")
+            .attr("transform", (d) => { return "translate(" + d.x + "," + d.y + ")"; });
+        let circle = eEnter.append("circle")
             .attr("r", (d) => { return 0; })
             .transition()
             .duration(defaults.animation.times.showDuration)
             .attr("r", (d) => { return defaults.shapes.nodes.r; })
+            .style("class", "node-yshift")
             .attr("stroke", "#ac0000")
             .attr("fill", defaults.shapes.nodes.color)
             .attr("stroke-width", 0)
-            .attr("opacity", 0.3)
+            .attr("opacity", defaults.shapes.nodes.opacity)
             .attr("filter", "url(#drop-shadow)");
-    },
-    addNodeLabels: (eEnter) => {
         eEnter.append("text")
-            .attr("id", (d) => { return d.label + "-text"; })
             .attr("alignment-baseline", "middle")
             .attr("dominant-baseline", "middle")
             .attr("text-anchor", "middle")
             .attr("fill", defaults.shapes.nodes.textColor)
-            .attr("opacity", 0.3)
             .transition()
             .delay(defaults.animation.times.showDuration)
             .text((d) => { return d.label; });
-    },
-    addEdges: (edges, defs) => {
-        const diagonal = d3.svg.diagonal()
-            .source(d => ({ x: d.source.x, y: d.source.y }))
-            .target(d => ({ x: d.target.x, y: d.target.y }));
-            // .projection(d => [d.y, d.x]);
-
-        const path = edges.append("path")
-            .attr("id", (d) => { return d.source.label + "-" + d.target.label; })
+        svg.append("g")
+            .selectAll("line")
+            .data(edges)
+            .enter()
+            .append("line")
             .attr("stroke", defaults.shapes.edges.color)
             .attr("stroke-width", (d) => { return defaults.shapes.edges.strokeWidth; })
-            .attr("d", d => {
-                const source = { x: (d.source.x + d.target.x) / 2, y: (d.source.y + d.target.y) / 2 };
-                const target = { x: (d.source.x + d.target.x) / 2, y: (d.source.y + d.target.y) / 2 };
-                return diagonal({ source: source, target: target });
-            })
-            .attr("opacity", 0.3)
-            .attr("fill", "none")
+            .attr("x1", (d) => { return (d.source.x + d.target.x) / 2; })
+            .attr("y1", (d) => { return (d.source.y + d.target.y) / 2; })
+            .attr("x2", (d) => { return (d.source.x + d.target.x) / 2; })
+            .attr("y2", (d) => { return (d.source.y + d.target.y) / 2; })
+            .attr("opacity", (d) => { return 0.0; })
             .transition()
             .duration(defaults.animation.times.showDuration)
-            .attr("d", d => {
-                const source = { x: d.source.x + draw.utils.shorten(d).xshorten, y: d.source.y + draw.utils.shorten(d).yshorten };
-                const target = { x: d.target.x - draw.utils.shorten(d).xshorten, y: d.target.y - draw.utils.shorten(d).yshorten };
-                return diagonal({ source: source, target: target });
-            })
-            .attr("opacity", 0.3)
+            .attr("x1", (d) => { return d.source.x + draw.utils.shorten(d).xshorten; })
+            .attr("y1", (d) => { return d.source.y + draw.utils.shorten(d).yshorten; })
+            .attr("x2", (d) => { return d.target.x - draw.utils.shorten(d).xshorten; })
+            .attr("y2", (d) => { return d.target.y - draw.utils.shorten(d).yshorten; })
+            .attr("opacity", defaults.shapes.edges.opacity)
             .attr("marker-end", (d) => {
                 const color = defaults.shapes.edges.color(d);
                 return draw.utils.addMarker(color, defs);
-            });
+            })
     },
     utils: {
         addMarker: (color, defs) => {
@@ -392,31 +278,17 @@ const draw = {
         shorten: (d) => {
             const dx = d.target.x - d.source.x;
             const dy = d.target.y - d.source.y;
-            if (dx !== 0 && dy === 0) {
-                return {
-                    xshorten: Math.sign(dx) * defaults.shapes.nodes.r,
-                    yshorten: 0,
-                };
-            }
+            const xCoeff = dx === 0 ? 0 : 1 / Math.sqrt(1 + Math.pow(dy / dx, 2));
+            const yCoeff = dx === 0 ? 1 : dy / (dx * Math.sqrt(1 + Math.pow(dy / dx, 2)));
+            const ysign = dx * dy < 0 ? - Math.sign(dy) : Math.sign(dy);
+            const xshorten = Math.sign(dx) * defaults.shapes.nodes.r * xCoeff;
+            const yshorten = ysign * defaults.shapes.nodes.r * yCoeff;
             return {
-                xshorten: 0,
-                yshorten: Math.sign(dy) * defaults.shapes.nodes.r,
+                xshorten: xshorten,
+                yshorten: yshorten,
             };
-            // TODO This is the original definition!
-            // const dx = d.target.x - d.source.x;
-            // const dy = d.target.y - d.source.y;
-            // const xCoeff = dx === 0 ? 0 : 1 / Math.sqrt(1 + Math.pow(dy / dx, 2));
-            // const yCoeff = dx === 0 ? 1 : dy / (dx * Math.sqrt(1 + Math.pow(dy / dx, 2)));
-            // const ysign = dx * dy < 0 ? - Math.sign(dy) : Math.sign(dy);
-            // const xshorten = Math.sign(dx) * defaults.shapes.nodes.r * xCoeff;
-            // const yshorten = ysign * defaults.shapes.nodes.r * yCoeff;
-            // return {
-            //     xshorten: xshorten,
-            //     yshorten: yshorten,
-            // };
         },
         graphify: (prudensOutput) => {
-            // console.log("out:", prudensOutput);
             const graph = prudensOutput["graph"];
             const context = prudensOutput["context"];
             const defeatedRules = prudensOutput["defeatedRules"];
@@ -490,8 +362,7 @@ const draw = {
                 edges = draw.utils.addEdgeRow(edges);
             }
             edges[ruleIndex][headIndex] = defeated ? (rule["head"]["sign"] ? 3 : 4) : (rule["head"]["sign"] ? 1 : 2);
-            // console.log(rule["name"], "\n", utils.matToString(edges));
-            // console.log("ruleBody:", ruleBody);
+            // console.log(rule["name"], "\n\r", utils.matToString(edges));
             for (const bodyLiteral of ruleBody) {
                 bodyIndex = draw.utils.addLiteralNode(prudens.utils.stringifyLiteral(bodyLiteral), context, nodes, edges, nodeType, sign);
                 edges[bodyIndex][ruleIndex] = defeated ? (bodyLiteral["sign"] ? 3 : 4) : (bodyLiteral["sign"] ? 1 : 2);
@@ -518,14 +389,41 @@ const draw = {
             return index;
         },
         layering: {
-            generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.computeLayersAndNodeCounts, xshift = 100, yshift = 100) => {
+            generateLayeredGraph: (graphObject, dx, dy, layering = draw.utils.layering.longestPathLayering, xshift = 100, yshift = 100) => {
                 const nodes = graphObject["nodes"];
                 const edges = graphObject["edges"];
-                // console.log(nodes, edges);
+                // console.log(nodes);
+                // console.log(edges);
                 const nodeObjects = [];
                 const edgeObjects = [];
-                const nodeCoords = {}
-                const layers = layering(nodes, edges);
+                const nodeCoords = {};
+                // console.log(edges);
+                
+                fetch('https://fictional-robot-jrq9q76qqpv3qwgw-5000.app.github.dev/get_layer_info', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ graph_matrix: edges, node_info: nodes }),
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log('Python Layer Info:', data);
+                    // Now, you can use the 'data' received from the server in your JavaScript
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+
+                // ['a', 'b', 'x', 'R1', 'z', 'R3', 'y', 'R4', 'R5', 'R2']
+                const layers_rep=[0,0,2,1,4,3,2,1,2,3];
+                const layerCount_rep={0:2,1:2,2:3,4:1,4:1};
+                const layers ={
+                    layers: layers_rep,
+                    layerCounts: layerCount_rep,
+                }
+                // console.log("this is the previous version", layers);
+                // console.log("current version", layers_rep);
                 const seenPerLayer = {};
                 let layer, current;
                 for (let i = 0; i < nodes.length; i++) {
@@ -544,6 +442,7 @@ const draw = {
                             type: graphObject["nodeType"][i],
                         }
                     };
+                    // console.log(current);
                     nodeObjects.push(current);
                     nodeCoords[nodes[i]] = current;
                 }
@@ -565,87 +464,6 @@ const draw = {
                     edges: edgeObjects,
                 };
             },
-            computeLayersAndNodeCounts: (nodeList, edgeMatrix) => {
-                // console.log(nodeList, edgeMatrix);
-                let dotGraph = "digraph {\n";
-                nodeList.forEach(node => {
-                    dotGraph += ` "${node}";\n`;
-                });
-                for (let i = 0; i < edgeMatrix.length; i++) {
-                    for (let j = 0; j < edgeMatrix[i].length; j++) {
-                        const weight = edgeMatrix[i][j];
-                        if (weight > 0 && weight < 5) {
-                            dotGraph += ` "${nodeList[i]}" -> "${nodeList[j]}";\n`;
-                        }
-                    }
-                }
-                dotGraph += "}\n";
-                console.log(dotGraph);
-                let edges = {};
-
-                for (let i = 0; i < nodeList.length; i++) {
-                    edges[nodeList[i]] = [];
-                    for (let j = 0; j < nodeList.length; j++) {
-                        if (edgeMatrix[i][j] !== 0) {
-                            edges[nodeList[i]].push(nodeList[j]);
-                        }
-                    }
-                }
-                let nodes = nodeList;
-                // console.log(edges);
-
-                // Step 2: Find the root nodes
-                const rootNodes = nodes.filter(node => !Object.values(edges).flat().includes(node));
-
-                // Step 3: Calculate the levels of nodes
-                const levels = {};
-                const queue = [...rootNodes];
-                rootNodes.forEach(root => { levels[root] = 0 });
-
-                while (queue.length > 0) {
-                    const node = queue.shift();
-                    const level = levels[node];
-                    const neighbors = edges[node];
-                
-                    for (let neighbor of neighbors) {
-                        if (levels[neighbor] === undefined) {
-                            queue.push(neighbor);
-                            if (neighbor.startsWith("R")) {
-                                levels[neighbor] = level + 1;
-                            } else {
-                                levels[neighbor] = level + 1;
-                            }
-                        } else {
-                            if (neighbor.startsWith("R")) {
-                                levels[neighbor] = Math.max(levels[neighbor], level  + 1);
-                            } else {
-                                levels[neighbor] = Math.max(levels[neighbor], level  + 1);
-                            }
-                        }
-                    }
-                }
-
-                // console.log("Final levels:", levels);
-                // console.log(levels);
-                // Creating layers_rep array
-                let layers_rep = nodes.map(node => levels[node]);
-
-                // Creating layerCount_rep object
-                let layerCount_rep = {};
-                for (let level of Object.values(levels)) {
-                    if (level in layerCount_rep) {
-                        layerCount_rep[level]++;
-                    } else {
-                        layerCount_rep[level] = 1;
-                    }
-                };
-
-                return {
-                    layers: layers_rep,
-                    layerCounts: layerCount_rep,
-                };
-            },
-
             longestPathLayering: (edges) => { // Assuming that the graph is acyclic.
                 const edgeTypes = [1, 2, 3, 4]; // What type of edges to consider when looking for sinks and longest paths.
                 const layers = []; // 0-indexed layers, L0 is the lowest one, containing all sinks.
@@ -682,15 +500,6 @@ const draw = {
             },
         },
         graph: {
-            neighbours: (node, edges, edgeTypes = [1, 2, 3, 4, 5]) => {
-                const neighbours = [];
-                for (let i = 0; i < edges[node].length; i++) {
-                    if (edgeTypes.includes(edges[node][i])) {
-                        neighbours.push(i);
-                    }
-                }
-                return neighbours;
-            },
             findSinks: (edges, edgeTypes = [1, 2, 3, 4, 5, 6]) => { // Sinks are all nodes with no outgoing edges.
                 const sinks = [];
                 let j;
